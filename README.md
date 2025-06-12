@@ -51,15 +51,15 @@ The command should point to the provided auth-wrapper.sh script, which handles c
 
 When configuring the add-on in the UI, you must provide the following:
 
-| Field              | Description                                                                 |
+| Config field name              | Description                                                                 |
 |--------------------|-----------------------------------------------------------------------------|
-| **LDAP-server**     | Full LDAP URI to your domain controller (e.g. `ldap://dc1.example.org:389`) |
-| **Bind user**       | A privileged AD user with permission to search for users and groups         |
-| **Bind password**   | Password for the bind user                                                  |
-| **User base DN**    | Distinguished Name of the OU containing user accounts                       |
-| **Group base DN**   | Distinguished Name of the OU containing security groups                     |
-| **Allowed AD group**| Users must be a member of this group to log in                              |
-| **Admin AD group**  | Optional. Users in this group will be marked as admin (if supported)  
+| **ldap_server**     | Full LDAP URI to your domain controller (e.g. `ldap://dc1.example.org:389`) |
+| **bind_userr**       | A privileged AD user with permission to search for users and groups         |
+| **bind_password**   | Password for the bind user                                                  |
+| **user_base_dn**    | Distinguished Name of the OU containing user accounts                       |
+| **groups_base_dn**   | Distinguished Name of the OU containing security groups                     |
+| **user_group**| Users must be a member of this group to log in                              |
+| **admin_group**  | Optional. Users in this group will be marked as admin (if supported)  
 
 ### 3. File: auth-wrapper.sh (placed in the /config folder)
 This Bash script is responsible for calling the local Flask server and outputting metadata in the format Home Assistant expects:
