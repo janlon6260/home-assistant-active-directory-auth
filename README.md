@@ -30,6 +30,7 @@ It integrates with the Home Assistant `command_line` authentication provider and
 
 Add the `command_line` auth provider to your Home Assistant configuration:
 
+```bash
 homeassistant:
 auth_providers:
  - type: command_line
@@ -39,6 +40,7 @@ auth_providers:
  - type: homeassistant
    name: " Microsoft Active Directory"
    meta: true
+```
 
 The command should point to the provided auth-wrapper.sh script, which handles communication with the internal LDAP Flask server (running on port 8000).
 
