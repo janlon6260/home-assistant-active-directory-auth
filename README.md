@@ -68,7 +68,7 @@ This Bash script is responsible for calling the local Flask server and outputtin
 response=$(curl -s -f -X POST \
   --data-urlencode "username=$username" \
   --data-urlencode "password=$password" \
-  http://localhost:8000/auth)
+  http://IP-OF-HA:8000/auth)
 
 if [ $? -ne 0 ]; then
   exit 1
