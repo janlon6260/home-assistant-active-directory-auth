@@ -34,7 +34,7 @@ Add the `command_line` auth provider to your Home Assistant configuration:
 homeassistant:
   auth_providers:
     - type: command_line
-      name: "Lokal brukerdatabase"
+      name: "Local users"
       command: /config/auth-wrapper.sh
       meta: true
 
