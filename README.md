@@ -90,11 +90,10 @@ fi
 
 ### Notes
 
-- A user will only be allowed to log in if they are a member of the configured **Allowed AD group**.
-- Users already defined in Home Assistant's local database will be matched by **username** (i.e. `sAMAccountName`).
-- If a user is not found in Home Assistant, they will be **created automatically** upon successful authentication.
+- A user will only be allowed to log in if they are a member of the **AD group name set in the config**. 
+- Username matching is not available at the moment. Even if a user with the same name exists locally, a new user will be created upon successful authentication
 - The administrator flag (`is_admin`) is passed to Home Assistant, but **does not override** local user roles.
-- **Administrator privileges must be assigned manually** from within Home Assistant.
+- **Administrator privileges are automatically granted when an AD user logs in**. These privileges must be manually revoked from within Home Assistant after the user has been created.
 
 ### Security
 
