@@ -59,7 +59,7 @@ When configuring the add-on in the UI, you must provide the following:
 | **Allowed AD group**| Users must be a member of this group to log in                              |
 | **Admin AD group**  | Optional. Users in this group will be marked as admin (if supported)  
 
-### 3. File: auth-wrapper.sh
+### 3. File: auth-wrapper.sh (placed in the /config folder)
 This Bash script is responsible for calling the local Flask server and outputting metadata in the format Home Assistant expects:
 
 ```bash
