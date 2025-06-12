@@ -108,7 +108,7 @@ fi
 - You can test the `/auth` endpoint manually with:
 
   ```bash
-  curl -X POST http://localhost:8000/auth \
+  curl -X POST http://IP-OF-HA:8000/auth \
        -d "username=yourusername" \
        -d "password=yourpassword"
 
