@@ -1,6 +1,6 @@
 # Active Directory authentication add-on for Home Assistant
 
-Tested and verified working on Home Assistant OS 2025.5.3 :white_check_mark:
+Tested and verified working on Home Assistant OS 2025.6 :white_check_mark:
 
 This Home Assistant add-on enables authentication against a Microsoft Active Directory (AD) domain using LDAP.  
 It integrates with the Home Assistant `command_line` authentication provider and supports:
