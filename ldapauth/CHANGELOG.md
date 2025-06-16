@@ -1,9 +1,6 @@
 # Changelog
 
-## 1.0.2
-- Folder cleanup
-
-## 1.0.1
+## 1.0.3
 - Moved `options` to `config.json` to preserve user configuration during updates
 - Minor improvements to metadata
 
