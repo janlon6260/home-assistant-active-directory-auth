@@ -1,8 +1,8 @@
 name: "Active Directory authentication Add-on"
-version: "1.0.0"
+version: "1.0.1"
 slug: "ldapauth"
-init: false
 description: "Active Directory authentication add-on for HAOS"
+init: false
 arch:
   - amd64
   - aarch64
@@ -12,14 +12,6 @@ arch:
 startup: services
 boot: auto
 host_network: true
-options:
-  ldap_server: "ldap://YOUR-DC-IP:389"
-  bind_user: "ha-bind-user@example.com"
-  bind_password: "supersecretpw"
-  user_base_dn: "OU=Users,DC=example,DC=com"
-  groups_base_dn: "OU=Groups,DC=example,DC=com"
-  user_group: "HA-ExampleAuthGroup"
-  admin_group: "Example admin group"
 schema:
   ldap_server: str
   bind_user: str

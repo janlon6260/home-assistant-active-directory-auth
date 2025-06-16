@@ -1,0 +1,20 @@
+{
+  "options": {
+    "ldap_server": "ldap://YOUR-DC-IP:389",
+    "bind_user": "ha-bind-user@example.com",
+    "bind_password": "supersecretpw",
+    "user_base_dn": "OU=Users,DC=example,DC=com",
+    "groups_base_dn": "OU=Groups,DC=example,DC=com",
+    "user_group": "HA-ExampleAuthGroup",
+    "admin_group": "Example admin group"
+  },
+  "schema": {
+    "ldap_server": "str",
+    "bind_user": "str",
+    "bind_password": "str",
+    "user_base_dn": "str",
+    "groups_base_dn": "str",
+    "user_group": "str",
+    "admin_group": "str"
+  }
+}
