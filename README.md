@@ -1,5 +1,7 @@
 # Active Directory authentication add-on for Home Assistant
 
+Tested and verified working on Home Assistant OS 2025.6 :white_check_mark:
+
 This Home Assistant add-on enables authentication against a Microsoft Active Directory (AD) domain using LDAP.  
 It integrates with the Home Assistant `command_line` authentication provider and supports:
 
@@ -30,16 +32,17 @@ It integrates with the Home Assistant `command_line` authentication provider and
 
 Add the `command_line` auth provider to your Home Assistant configuration:
 
-```bash
+```yaml
 homeassistant:
-auth_providers:
- - type: command_line
-   name: "Local users"
-   command: /config/auth-wrapper.sh
-   meta: true
- - type: homeassistant
-   name: " Microsoft Active Directory"
-   meta: true
+  auth_providers:
+    - type: command_line
+      name: "Local users"
+      command: /config/auth-wrapper.sh
+      meta: true
+
+    - type: homeassistant
+      name: "Microsoft Active Directory"
+      meta: true
 ```
 
 The command should point to the provided auth-wrapper.sh script, which handles communication with the internal LDAP Flask server (running on port 8000).
@@ -48,17 +51,17 @@ The command should point to the provided auth-wrapper.sh script, which handles c
 
 When configuring the add-on in the UI, you must provide the following:
 
-| Field              | Description                                                                 |
+| Config field name              | Description                                                                 |
 |--------------------|-----------------------------------------------------------------------------|
-| **LDAP-server**     | Full LDAP URI to your domain controller (e.g. `ldap://dc1.example.org:389`) |
-| **Bind user**       | A privileged AD user with permission to search for users and groups         |
-| **Bind password**   | Password for the bind user                                                  |
-| **User base DN**    | Distinguished Name of the OU containing user accounts                       |
-| **Group base DN**   | Distinguished Name of the OU containing security groups                     |
-| **Allowed AD group**| Users must be a member of this group to log in                              |
-| **Admin AD group**  | Optional. Users in this group will be marked as admin (if supported)  
+| **ldap_server**     | Full LDAP URI to your domain controller (e.g. `ldap://dc1.example.org:389`) |
+| **bind_userr**       | A privileged AD user with permission to search for users and groups         |
+| **bind_password**   | Password for the bind user                                                  |
+| **user_base_dn**    | Distinguished Name of the OU containing user accounts                       |
+| **groups_base_dn**   | Distinguished Name of the OU containing security groups                     |
+| **user_group**| Users must be a member of this group to log in                              |
+| **admin_group**  | Optional. Users in this group will be marked as admin (if supported)  
 
-### 3. File: auth-wrapper.sh
+### 3. File: auth-wrapper.sh (placed in the /config folder)
 This Bash script is responsible for calling the local Flask server and outputting metadata in the format Home Assistant expects:
 
 ```bash
@@ -67,7 +70,7 @@ This Bash script is responsible for calling the local Flask server and outputtin
 response=$(curl -s -f -X POST \
   --data-urlencode "username=$username" \
   --data-urlencode "password=$password" \
-  http://localhost:8000/auth)
+  http://IP-OF-HA:8000/auth)
 
 if [ $? -ne 0 ]; then
   exit 1
@@ -89,11 +92,10 @@ fi
 
 ### Notes
 
-- A user will only be allowed to log in if they are a member of the configured **Allowed AD group**.
-- Users already defined in Home Assistant's local database will be matched by **username** (i.e. `sAMAccountName`).
-- If a user is not found in Home Assistant, they will be **created automatically** upon successful authentication.
+- A user will only be allowed to log in if they are a member of the **AD group name set in the config**. 
+- Username matching is not available at the moment. Even if a user with the same name exists locally, a new user will be created upon successful authentication
 - The administrator flag (`is_admin`) is passed to Home Assistant, but **does not override** local user roles.
-- **Administrator privileges must be assigned manually** from within Home Assistant.
+- **Administrator privileges are automatically granted when an AD user logs in**. These privileges must be manually revoked from within Home Assistant after the user has been created.
 
 ### Security
 
@@ -108,7 +110,7 @@ fi
 - You can test the `/auth` endpoint manually with:
 
   ```bash
-  curl -X POST http://localhost:8000/auth \
+  curl -X POST http://IP-OF-HA:8000/auth \
        -d "username=yourusername" \
        -d "password=yourpassword"
 
