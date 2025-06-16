@@ -1,0 +1,11 @@
+# Changelog
+
+## 1.0.2
+- Folder cleanup
+
+## 1.0.1
+- Moved `options` to `config.json` to preserve user configuration during updates
+- Minor improvements to metadata
+
+## 1.0.0
+- Initial release with Active Directory authentication via LDAP
