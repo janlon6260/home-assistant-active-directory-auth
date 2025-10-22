@@ -1,5 +1,5 @@
 name: "Active Directory authentication Add-on"
-version: "1.1.1"
+version: "1.2.1"
 slug: "ldapauth"
 description: "Active Directory authentication add-on for HAOS"
 url: https://github.com/janlon6260/home-assistant-active-directory-auth
@@ -13,27 +13,22 @@ arch:
 startup: services
 boot: auto
 host_network: true
-
 map:
   - ssl:ro
   - share:rw
-
 schema:
   ldap_server: str
   bind_user: str
-
   bind_password: password
-
   user_base_dn: str
   groups_base_dn: str
   user_group: str
   admin_group: str
-
   enable_ldaps: "bool?"
   ldaps_verify: "bool?"
-  ldaps_ca_path: "str?"
-  ldaps_ca_pem: "str?"
-
+  ldaps_ca_pem:
+    type: str?
+    multiline: true
 ports:
   "8000/tcp": 8000
 webui: "http://[HOST]:[PORT:8000]"

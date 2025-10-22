@@ -42,10 +42,6 @@ SEARCH_FILTER_TPL = (
 app = Flask(__name__)
 
 def _parse_ldap_server(url_or_host: str):
-    """
-    Tar 'ldap://host:389' eller 'ldaps://host:636' eller bare 'host'
-    og returnerer (host, port, use_ssl) basert på konfig og/eller URL.
-    """
     parsed = urlparse(url_or_host)
     if parsed.scheme in ("ldap", "ldaps"):
         host = parsed.hostname
