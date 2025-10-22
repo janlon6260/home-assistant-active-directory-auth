@@ -13,6 +13,9 @@ arch:
 startup: services
 boot: auto
 host_network: true
+log:
+  max_size: 1m
+  max_files: 1
 map:
   - ssl:ro
   - share:rw
