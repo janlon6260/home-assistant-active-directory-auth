@@ -1,5 +1,5 @@
 name: "Active Directory authentication Add-on"
-version: "1.2.4"
+version: "1.2.5"
 slug: "ldapauth"
 description: "Active Directory authentication add-on for HAOS"
 url: https://github.com/janlon6260/home-assistant-active-directory-auth
