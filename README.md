@@ -56,7 +56,7 @@ When configuring the add-on in the UI, you must provide the following:
 | Config field name | Description |
 |--------------------|-------------|
 | **ldap_server** | Full LDAP or LDAPS URI to your domain controller (e.g. `ldap://dc1.example.org:389` or `ldaps://dc1.example.org:636`) |
-| **bind_user** | A privileged AD user with permission to search for users and groups (e.g. `ha-bind@intern.skodje.org`) |
+| **bind_user** | A privileged AD user with permission to search for users and groups (e.g. `ha-bind@example.com`) |
 | **bind_password** | Password for the bind user |
 | **user_base_dn** | Distinguished Name of the OU containing user accounts |
 | **groups_base_dn** | Distinguished Name of the OU containing security groups |
