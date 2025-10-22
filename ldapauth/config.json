@@ -9,7 +9,8 @@
     "admin_group": "Example admin group",
     "enable_ldaps": false,
     "ldaps_verify": true,
-    "ldaps_ca_pem": "-----BEGIN CERTIFICATE-----\n\n-----END CERTIFICATE-----"
+    "ldaps_ca_pem": "",
+    "debug_logging": false
   },
   "schema": {
     "ldap_server": "str",
@@ -21,6 +22,7 @@
     "admin_group": "str",
     "enable_ldaps": "bool?",
     "ldaps_verify": "bool?",
-    "ldaps_ca_pem": "str?"
+    "ldaps_ca_pem": "str?",
+    "debug_logging": "bool?"
   }
 }
