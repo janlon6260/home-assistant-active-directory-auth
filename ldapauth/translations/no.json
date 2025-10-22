@@ -1,0 +1,51 @@
+{
+  "configuration": {
+    "title": "Active Directory-autentisering (tillegg)",
+    "options": {
+      "ldap_server": {
+        "name": "LDAP-server URL eller vertsnavn",
+        "description": "Eksempel: ldap://dc1.example.com:389 eller ldaps://dc1.example.com:636. Dersom LDAPS er aktivert under, brukes som standard port 636."
+      },
+      "bind_user": {
+        "name": "Bind-bruker (DN/UPN)",
+        "description": "Bruker for oppslag/bind, f.eks. ha-bind-user@example.com eller CN=ha-bind-user,OU=Service Accounts,DC=example,DC=com."
+      },
+      "bind_password": {
+        "name": "Bind-passord",
+        "description": "Passord til bind-brukeren. Lagres i tilleggskonfigurasjonen."
+      },
+      "user_base_dn": {
+        "name": "User Base DN",
+        "description": "Base-DN for søk etter brukere, f.eks. OU=Users,DC=example,DC=com."
+      },
+      "groups_base_dn": {
+        "name": "Groups Base DN",
+        "description": "Base-DN for sikkerhetsgrupper, f.eks. OU=Groups,DC=example,DC=com."
+      },
+      "user_group": {
+        "name": "Påkrevd brukergruppe (CN)",
+        "description": "CN til gruppen som kreves for tilgang, f.eks. HA-Users."
+      },
+      "admin_group": {
+        "name": "Admin-gruppe (CN)",
+        "description": "CN til gruppen som gir Home Assistant-administrator."
+      },
+      "enable_ldaps": {
+        "name": "Aktiver LDAPS (TLS på port 636)",
+        "description": "Slå på LDAP over SSL/TLS. La være av for å bruke vanlig LDAP."
+      },
+      "ldaps_verify": {
+        "name": "Valider server-sertifikat",
+        "description": "Anbefales. Når dette er på, valideres DC-sertifikatet mot CA nedenfor."
+      },
+      "ldaps_ca_path": {
+        "name": "CA-filsti (valgfritt)",
+        "description": "Sti til CA-fil i HA, f.eks. /ssl/ad_root_ca.pem. /ssl er mappet inn som skrivebeskyttet."
+      },
+      "ldaps_ca_pem": {
+        "name": "CA-sertifikat (PEM) – tekstboks",
+        "description": "Lim inn rot/mellomliggende CA i PEM-format, inkludert BEGIN/END-linjene. Bruk enten dette feltet eller CA-filsti."
+      }
+    }
+  }
+}

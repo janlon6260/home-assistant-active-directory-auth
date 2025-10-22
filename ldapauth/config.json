@@ -16,7 +16,9 @@
   "schema": {
     "ldap_server": "str",
     "bind_user": "str",
-    "bind_password": "str",
+
+    "bind_password": "password",
+
     "user_base_dn": "str",
     "groups_base_dn": "str",
     "user_group": "str",

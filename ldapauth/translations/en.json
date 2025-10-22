@@ -1,0 +1,51 @@
+{
+  "configuration": {
+    "title": "Active Directory authentication Add-on",
+    "options": {
+      "ldap_server": {
+        "name": "LDAP server URL or host",
+        "description": "Examples: ldap://dc1.example.com:389 or ldaps://dc1.example.com:636. If LDAPS is enabled below, 636 is used by default."
+      },
+      "bind_user": {
+        "name": "Bind user (DN/UPN)",
+        "description": "User used for directory lookup/bind, e.g. ha-bind-user@example.com or CN=ha-bind-user,OU=Service Accounts,DC=example,DC=com."
+      },
+      "bind_password": {
+        "name": "Bind password",
+        "description": "Password for the bind user. Stored in add-on options."
+      },
+      "user_base_dn": {
+        "name": "User Base DN",
+        "description": "Base DN to search for users, e.g. OU=Users,DC=example,DC=com."
+      },
+      "groups_base_dn": {
+        "name": "Groups Base DN",
+        "description": "Base DN where your security groups live, e.g. OU=Groups,DC=example,DC=com."
+      },
+      "user_group": {
+        "name": "Required user group (CN)",
+        "description": "CN of the group required for access, e.g. HA-Users."
+      },
+      "admin_group": {
+        "name": "Admin group (CN)",
+        "description": "CN of the group that grants Home Assistant admin role."
+      },
+      "enable_ldaps": {
+        "name": "Enable LDAPS (TLS on port 636)",
+        "description": "Turn on LDAP over SSL/TLS. Keep disabled to use plain LDAP."
+      },
+      "ldaps_verify": {
+        "name": "Verify server certificate",
+        "description": "Recommended. When enabled, the DC certificate will be validated against the CA below."
+      },
+      "ldaps_ca_path": {
+        "name": "CA file path (optional)",
+        "description": "Path to the CA file inside HA, e.g. /ssl/ad_root_ca.pem. Read-only mapping is provided."
+      },
+      "ldaps_ca_pem": {
+        "name": "CA certificate (PEM) paste box",
+        "description": "Paste the root/intermediate CA in PEM format, including BEGIN/END lines. Use either this field or the CA file path."
+      }
+    }
+  }
+}
