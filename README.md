@@ -1,22 +1,24 @@
 # Active Directory authentication add-on for Home Assistant
 
-Tested and verified working on Home Assistant OS 2025.6 :white_check_mark:
+Tested and verified working on Home Assistant OS 2025.10.x ✅
 
-This Home Assistant add-on enables authentication against a Microsoft Active Directory (AD) domain using LDAP.  
+This Home Assistant add-on enables authentication against a Microsoft Active Directory (AD) domain using LDAP or LDAPS.  
 It integrates with the Home Assistant `command_line` authentication provider and supports:
 
-- Lookup and verification of AD users via LDAP bind
+- Lookup and verification of AD users via LDAP or LDAPS bind
 - Group-based access control
-- Optional administrator assignment based on AD group membership (see limitations)
+- Optional administrator assignment based on AD group membership
+- Automatic loading of trusted CA certificate from `/config/certs/ldap-cert.pem` for LDAPS
 - Seamless integration with existing Home Assistant local users
 
 ## Features
 
-- Authenticate users against Active Directory using LDAP over TCP (port 389)
+- Authenticate users against Active Directory using LDAP (port 389) or LDAPS (port 636)
 - Match authenticated AD users with existing Home Assistant users (by `username`)
 - Automatically creates user account in Home Assistant if none exists
 - Optional promotion to admin based on group membership (if supported)
 - Supports full names (`displayName` or `cn`) and email from AD
+- Built-in debug logging and `/diagnose` endpoint to verify certificate status
 
 ## Installation
 
@@ -45,32 +47,34 @@ homeassistant:
       meta: true
 ```
 
-The command should point to the provided auth-wrapper.sh script, which handles communication with the internal LDAP Flask server (running on port 8000).
+The command should point to the provided auth-wrapper.sh script, which handles communication with the internal LDAP/LDAPS Flask server (running on port 8000).
 
 ### 2. Add-on Configuration UI
 
 When configuring the add-on in the UI, you must provide the following:
 
-| Config field name              | Description                                                                 |
-|--------------------|-----------------------------------------------------------------------------|
-| **ldap_server**     | Full LDAP URI to your domain controller (e.g. `ldap://dc1.example.org:389`) |
-| **bind_userr**       | A privileged AD user with permission to search for users and groups         |
-| **bind_password**   | Password for the bind user                                                  |
-| **user_base_dn**    | Distinguished Name of the OU containing user accounts                       |
-| **groups_base_dn**   | Distinguished Name of the OU containing security groups                     |
-| **user_group**| Users must be a member of this group to log in                              |
-| **admin_group**  | Optional. Users in this group will be marked as admin (if supported)  
+| Config field name | Description |
+|--------------------|-------------|
+| **ldap_server** | Full LDAP or LDAPS URI to your domain controller (e.g. `ldap://dc1.example.org:389` or `ldaps://dc1.example.org:636`) |
+| **bind_user** | A privileged AD user with permission to search for users and groups (e.g. `ha-bind@intern.skodje.org`) |
+| **bind_password** | Password for the bind user |
+| **user_base_dn** | Distinguished Name of the OU containing user accounts |
+| **groups_base_dn** | Distinguished Name of the OU containing security groups |
+| **user_group** | Users must be a member of this group to log in |
+| **admin_group** | Optional. Users in this group will be marked as admin |
+| **enable_ldaps** | Enables secure LDAPS connection (port 636) |
+| **ldaps_verify** | Validates the certificate presented by the domain controller |
+| **ldaps_ca_pem** | Optional text field for pasting PEM certificate if not using `/config/certs/ldap-cert.pem` |
+| **debug_logging** | Enables verbose debug output for troubleshooting |
 
 ### 3. File: auth-wrapper.sh (placed in the /config folder)
+
 This Bash script is responsible for calling the local Flask server and outputting metadata in the format Home Assistant expects:
 
 ```bash
 #!/bin/bash
 
-response=$(curl -s -f -X POST \
-  --data-urlencode "username=$username" \
-  --data-urlencode "password=$password" \
-  http://IP-OF-HA:8000/auth)
+response=$(curl -s -f -X POST   --data-urlencode "username=$username"   --data-urlencode "password=$password"   http://127.0.0.1:8000/auth)
 
 if [ $? -ne 0 ]; then
   exit 1
@@ -93,14 +97,14 @@ fi
 ### Notes
 
 - A user will only be allowed to log in if they are a member of the **AD group name set in the config**. 
-- Username matching is not available at the moment. Even if a user with the same name exists locally, a new user will be created upon successful authentication
+- Username matching is not available at the moment. Even if a user with the same name exists locally, a new user will be created upon successful authentication.
 - The administrator flag (`is_admin`) is passed to Home Assistant, but **does not override** local user roles.
 - **Administrator privileges are automatically granted when an AD user logs in**. These privileges must be manually revoked from within Home Assistant after the user has been created.
 
 ### Security
 
-- Passwords are **never stored**; they are passed directly to Active Directory over **HTTP (localhost only)**.
-- The add-on should **only be used in trusted networks**, as communication between HA, the add-on and DC is unencrypted.
+- Passwords are **never stored**; they are passed directly to Active Directory over HTTP (localhost only).
+- LDAPS connections use SSL/TLS with optional certificate validation.
 - The bind user should have **minimal permissions** — only read access to users and groups.
 
 ### Troubleshooting
@@ -110,7 +114,5 @@ fi
 - You can test the `/auth` endpoint manually with:
 
   ```bash
-  curl -X POST http://IP-OF-HA:8000/auth \
-       -d "username=yourusername" \
-       -d "password=yourpassword"
-
+  curl -X POST http://127.0.0.1:8000/auth        -d "username=yourusername"        -d "password=yourpassword"
+  ```
