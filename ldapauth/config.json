@@ -6,7 +6,12 @@
     "user_base_dn": "OU=Users,DC=example,DC=com",
     "groups_base_dn": "OU=Groups,DC=example,DC=com",
     "user_group": "HA-ExampleAuthGroup",
-    "admin_group": "Example admin group"
+    "admin_group": "Example admin group",
+
+    "enable_ldaps": false,
+    "ldaps_verify": true,
+    "ldaps_ca_path": "",
+    "ldaps_ca_pem": ""
   },
   "schema": {
     "ldap_server": "str",
@@ -15,6 +20,11 @@
     "user_base_dn": "str",
     "groups_base_dn": "str",
     "user_group": "str",
-    "admin_group": "str"
+    "admin_group": "str",
+
+    "enable_ldaps": "bool?",
+    "ldaps_verify": "bool?",
+    "ldaps_ca_path": "str?",
+    "ldaps_ca_pem": "str?"
   }
 }
