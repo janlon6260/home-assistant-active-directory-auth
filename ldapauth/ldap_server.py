@@ -25,6 +25,8 @@ LDAP_ADMIN_GROUP_DN = f"CN={config['admin_group']},{LDAP_GROUPS_BASE_DN}"
 ENABLE_LDAPS = bool(config.get("enable_ldaps", False))
 LDAPS_VERIFY = bool(config.get("ldaps_verify", True))
 LDAPS_CA_PEM = (config.get("ldaps_ca_pem") or "").strip()
+if "\\n" in LDAPS_CA_PEM:
+    LDAPS_CA_PEM = LDAPS_CA_PEM.replace("\\n", "\n")
 DEBUG_LOGGING = bool(config.get("debug_logging", False))
 LDAP_TIMEOUT = 3
 

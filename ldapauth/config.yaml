@@ -27,12 +27,10 @@ schema:
   groups_base_dn: str
   user_group: str
   admin_group: str
-  enable_ldaps: "bool?"
-  ldaps_verify: "bool?"
-  ldaps_ca_pem:
-    type: str?
-    multiline: true
-  debug_logging: "bool?"
+  enable_ldaps: bool?
+  ldaps_verify: bool?
+  ldaps_ca_pem: str?
+  debug_logging: bool?
 ports:
   "8000/tcp": 8000
 webui: "http://[HOST]:[PORT:8000]"
