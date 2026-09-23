@@ -1,6 +1,6 @@
 # Active Directory authentication add-on for Home Assistant
 
-Tested and verified working on Home Assistant OS 2025.10.x ✅
+Tested and verified working on Home Assistant OS 2026.9.x ✅
 
 This Home Assistant add-on enables authentication against a Microsoft Active Directory (AD) domain using LDAP or LDAPS.  
 It integrates with the Home Assistant `command_line` authentication provider and supports:
@@ -40,6 +40,7 @@ homeassistant:
     - type: command_line
       name: "Local users"
       command: /config/auth-wrapper.sh
+      args: []
       meta: true
 
     - type: homeassistant
@@ -53,19 +54,19 @@ The command should point to the provided auth-wrapper.sh script, which handles c
 
 When configuring the add-on in the UI, you must provide the following:
 
-| Config field name | Description |
-|--------------------|-------------|
-| **ldap_server** | Full LDAP or LDAPS URI to your domain controller (e.g. `ldap://dc1.example.org:389` or `ldaps://dc1.example.org:636`) |
-| **bind_user** | A privileged AD user with permission to search for users and groups (e.g. `ha-bind@intern.skodje.org`) |
-| **bind_password** | Password for the bind user |
-| **user_base_dn** | Distinguished Name of the OU containing user accounts |
-| **groups_base_dn** | Distinguished Name of the OU containing security groups |
-| **user_group** | Users must be a member of this group to log in |
-| **admin_group** | Optional. Users in this group will be marked as admin |
-| **enable_ldaps** | Enables secure LDAPS connection (port 636) |
-| **ldaps_verify** | Validates the certificate presented by the domain controller |
-| **ldaps_ca_pem** | Optional text field for pasting PEM certificate if not using `/config/certs/ldap-cert.pem` |
-| **debug_logging** | Enables verbose debug output for troubleshooting |
+| Config field name  | Description                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| **ldap_server**    | Full LDAP or LDAPS URI to your domain controller (e.g. `ldap://dc1.example.org:389` or `ldaps://dc1.example.org:636`) |
+| **bind_user**      | A privileged AD user with permission to search for users and groups (e.g. `ha-bind@intern.skodje.org`)                |
+| **bind_password**  | Password for the bind user                                                                                            |
+| **user_base_dn**   | Distinguished Name of the OU containing user accounts                                                                 |
+| **groups_base_dn** | Distinguished Name of the OU containing security groups                                                               |
+| **user_group**     | Users must be a member of this group to log in                                                                        |
+| **admin_group**    | Optional. Users in this group will be marked as admin                                                                 |
+| **enable_ldaps**   | Enables secure LDAPS connection (port 636)                                                                            |
+| **ldaps_verify**   | Validates the certificate presented by the domain controller                                                          |
+| **ldaps_ca_pem**   | Optional text field for pasting PEM certificate if not using `/config/certs/ldap-cert.pem`                            |
+| **debug_logging**  | Enables verbose debug output for troubleshooting                                                                      |
 
 ### 3. File: auth-wrapper.sh (placed in the /config folder)
 
@@ -96,7 +97,7 @@ fi
 
 ### Notes
 
-- A user will only be allowed to log in if they are a member of the **AD group name set in the config**. 
+- A user will only be allowed to log in if they are a member of the **AD group name set in the config**.
 - Username matching is not available at the moment. Even if a user with the same name exists locally, a new user will be created upon successful authentication.
 - The administrator flag (`is_admin`) is passed to Home Assistant, but **does not override** local user roles.
 - **Administrator privileges are automatically granted when an AD user logs in**. These privileges must be manually revoked from within Home Assistant after the user has been created.
