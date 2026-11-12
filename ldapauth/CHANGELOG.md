@@ -1,5 +1,6 @@
 # Changelog
 
+<<<<<<< HEAD
 ## 3.0.0
 
 ### Breaking changes
@@ -24,6 +25,13 @@
 - Corrected Home Assistant provider configuration, metadata and administrator-role behavior.
 - Escaped usernames and group RDNs, disabled referrals and rejected ambiguous directory matches.
 - Removed unnecessary writable shared-folder access and public diagnostics.
+=======
+## 2.0.1
+Fix:
+- Fixed installation failure on recent Home Assistant OS and Supervisor versions.
+- Removed dependency on the deprecated BUILD_FROM build argument.
+- Explicitly defined the Home Assistant base image in the Dockerfile to ensure compatibility with the updated Supervisor build system.
+>>>>>>> 84ff87661257a50a6147736f22ecdd92426dff54
 
 ## 2.0.0
 - Added LDAPS support

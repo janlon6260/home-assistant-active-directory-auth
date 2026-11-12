@@ -57,6 +57,22 @@ See [validation results and remaining host checks](VALIDATION.md).
 
 Report bugs through [GitHub issues](https://github.com/janlon6260/home-assistant-active-directory-auth/issues). Do not include passwords, downloaded authentication scripts, API keys or directory exports.
 
+<<<<<<< HEAD
 Licensed under [Apache-2.0](LICENSE).
+=======
+| Config field name  | Description                                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| **ldap_server**    | Full LDAP or LDAPS URI to your domain controller (e.g. `ldap://dc1.example.org:389` or `ldaps://dc1.example.org:636`) |
+| **bind_user**      | A privileged AD user with permission to search for users and groups (e.g. `ha-bind@example.com`)                |
+| **bind_password**  | Password for the bind user                                                                                            |
+| **user_base_dn**   | Distinguished Name of the OU containing user accounts                                                                 |
+| **groups_base_dn** | Distinguished Name of the OU containing security groups                                                               |
+| **user_group**     | Users must be a member of this group to log in                                                                        |
+| **admin_group**    | Optional. Users in this group will be marked as admin                                                                 |
+| **enable_ldaps**   | Enables secure LDAPS connection (port 636)                                                                            |
+| **ldaps_verify**   | Validates the certificate presented by the domain controller                                                          |
+| **ldaps_ca_pem**   | Optional text field for pasting PEM certificate if not using `/config/certs/ldap-cert.pem`                            |
+| **debug_logging**  | Enables verbose debug output for troubleshooting                                                                      |
+>>>>>>> 84ff87661257a50a6147736f22ecdd92426dff54
 
 Editable icon and logo sources live in `branding/`. Regenerate the PNG assets with `python -m scripts.render_branding` (add `--chrome` to use a locally installed Chrome).
