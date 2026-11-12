@@ -34,8 +34,6 @@ This machine has no Docker runtime or installed WSL distribution. The following 
 
 GitHub Actions is configured to lint, test Python 3.13/3.14, audit dependencies, parse AppArmor, run ShellCheck, exercise the browser workflow, build both container architectures and verify container startup/health. These workflows have not been executed remotely during this task.
 
-The expected Home Assistant security score is **7/8 before installation**, **8/8 after the custom AppArmor profile loads**, according to the [Supervisor's documented scoring rules](https://contributors.home-assistant.io/apps/reference/security-rating/). Confirm it on the HAOS host.
-
 ## Upgrade review
 
 Before using 3.0.0 for AD sign-in, install the configured Python wrapper downloaded from Ingress and update the Home Assistant provider configuration. Review existing users' roles manually: the previous wrapper emitted unsupported role metadata. See [migration instructions](ldapauth/DOCS.md#upgrading-from-2x).

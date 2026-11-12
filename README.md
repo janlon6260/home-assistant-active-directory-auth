@@ -13,9 +13,9 @@ Sign in to Home Assistant with Microsoft Active Directory. Control access with A
 
 Requires Home Assistant OS on **amd64** or **aarch64**.
 
-[![Install Active Directory Authentication in Home Assistant](https://my.home-assistant.io/badges/supervisor_app.svg)](https://my.home-assistant.io/redirect/supervisor_app/?app=62996225_ldapauth&repository_url=https%3A%2F%2Fgithub.com%2Fjanlon6260%2Fhome-assistant-active-directory-auth)
+[![Add the Active Directory Authentication repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fjanlon6260%2Fhome-assistant-active-directory-auth)
 
-The button opens this app in your own Home Assistant. Confirm adding the repository if prompted, then select **Install**. You can also [add the repository directly](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fjanlon6260%2Fhome-assistant-active-directory-auth), or follow the manual steps below.
+The button opens the add-repository dialog in your own Home Assistant. Confirm **Add**, then select **Active Directory Authentication** in the app store and choose **Install**. If the dialog does not open, use the manual steps below.
 
 1. Open **Settings → Apps → App store → ⋮ → Repositories**.
 2. Add `https://github.com/janlon6260/home-assistant-active-directory-auth`.
@@ -29,10 +29,6 @@ The button opens this app in your own Home Assistant. Confirm adding the reposit
 ## Upgrading from 2.x
 
 Version 3.0 changes the network and authentication setup. **Download and install the new script before relying on AD sign-in.** The old `http://127.0.0.1:8000/auth` wrapper no longer works. Keep the local Home Assistant authentication provider and your current administrator session available during migration. See [migration instructions](ldapauth/DOCS.md#upgrading-from-2x).
-
-## Security rating
-
-The configuration is expected to score **7/8 before installation** and **8/8 once its custom AppArmor profile is loaded**: base 5, Ingress +2, custom AppArmor +1. The installed score depends on the host successfully loading AppArmor. This is a configuration-based expectation, not a Home Assistant certification. See the [official scoring rules](https://contributors.home-assistant.io/apps/reference/security-rating/).
 
 ## Development
 
@@ -57,13 +53,14 @@ See [validation results and remaining host checks](VALIDATION.md).
 
 Report bugs through [GitHub issues](https://github.com/janlon6260/home-assistant-active-directory-auth/issues). Do not include passwords, downloaded authentication scripts, API keys or directory exports.
 
-<<<<<<< HEAD
 Licensed under [Apache-2.0](LICENSE).
-=======
+
+## Configuration reference
+
 | Config field name  | Description                                                                                                           |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
 | **ldap_server**    | Full LDAP or LDAPS URI to your domain controller (e.g. `ldap://dc1.example.org:389` or `ldaps://dc1.example.org:636`) |
-| **bind_user**      | A privileged AD user with permission to search for users and groups (e.g. `ha-bind@example.com`)                |
+| **bind_user**      | Read-only AD account used to search for users and groups (e.g. `ha-bind@example.com`)                |
 | **bind_password**  | Password for the bind user                                                                                            |
 | **user_base_dn**   | Distinguished Name of the OU containing user accounts                                                                 |
 | **groups_base_dn** | Distinguished Name of the OU containing security groups                                                               |
@@ -73,6 +70,5 @@ Licensed under [Apache-2.0](LICENSE).
 | **ldaps_verify**   | Validates the certificate presented by the domain controller                                                          |
 | **ldaps_ca_pem**   | Optional text field for pasting PEM certificate if not using `/config/certs/ldap-cert.pem`                            |
 | **debug_logging**  | Enables verbose debug output for troubleshooting                                                                      |
->>>>>>> 84ff87661257a50a6147736f22ecdd92426dff54
 
 Editable icon and logo sources live in `branding/`. Regenerate the PNG assets with `python -m scripts.render_branding` (add `--chrome` to use a locally installed Chrome).

@@ -98,7 +98,7 @@ See the [official command-line authentication documentation](https://www.home-as
 - AppArmor allows application reads and private data writes, together with the S6 runtime, read-only certificate files and network operations. Keep Protection mode enabled.
 - The broad Home Assistant configuration mount is read-only and exists for legacy CA-file compatibility; the AppArmor profile grants access only to its legacy certificate path.
 
-The expected [security rating](https://contributors.home-assistant.io/apps/reference/security-rating/) is 7/8 before installation and 8/8 when AppArmor loads. Confirm the installed rating and profile enforcement on your HAOS host.
+Confirm AppArmor profile loading and enforcement on your HAOS host.
 
 ## Upgrading from 2.x
 
