@@ -1,14 +1,17 @@
-# Validation — 12 November 2026
+# Validation — 13 November 2026
 
-Local checks for version 3.0.0, run on Windows before any commit or push:
+Local checks for version 3.0.1, run on Windows. Dependency audits and Alpine binary-availability checks were last run on 12 November 2026; dependency versions have not changed.
 
 | Check | Result |
 | --- | --- |
-| Python 3.13.1 test suite | 95 passed, 1 skipped |
-| Python 3.14.8 test suite | 95 passed, 1 skipped |
+| Python 3.13.1 test suite | 104 passed, 1 skipped |
+| Python 3.14.8 test suite | 104 passed, 1 skipped |
 | Python statement coverage | 94% overall; certificate and settings modules 100% |
 | Real TLS handshakes | Trusted CA and matching hostname accepted; untrusted CA and mismatched hostname rejected |
 | HTTP and authentication | API-key enforcement, Ingress TCP-peer isolation, CSRF, input/body limits, roles, rate limits and worker availability passed |
+| AD group matching | Reproduced rejected sign-in for a full group DN in 3.0.0; 3.0.1 accepts CN/full DN, casing and separator whitespace and retains required membership and password checks |
+| LDAP client regression | ldap3 mock directory exercises lookup, short-name/UPN sign-in and user binds for CN/full-DN access groups |
+| Authentication diagnostics | App logs distinguish missing group membership and other denial reasons without exposing submitted credentials |
 | Production application lifecycle | Both listeners start; health endpoint responds; worker pool closes on shutdown |
 | Browser workflow, Chrome 157 | Ingress URL prefix, connection test, certificate upload, script download, removal/cancel, language switching, light/dark presentation and mobile layout passed |
 | Browser errors | No JavaScript exceptions or failed HTTP responses during the tested workflow |

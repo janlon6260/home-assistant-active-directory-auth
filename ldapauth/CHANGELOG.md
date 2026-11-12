@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.1
+
+- Fixed rejected sign-ins when an access or administrator group is specified using its full distinguished name.
+- Accept short group names and full DNs; a shared group base is only required for short names.
+- Compare group DNs consistently across letter casing and separator whitespace, while retaining direct-membership checks.
+- Added safe authentication failure reasons to app logs and a separate warning for outdated script API keys.
+- Updated English/Norwegian option descriptions and added LDAP client regression tests for group matching.
+
 ## 3.0.0
 
 ### Breaking changes

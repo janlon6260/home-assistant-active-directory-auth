@@ -48,13 +48,18 @@ def test_secret_hidden_and_configuration(settings):
 
 def test_short_group_names_require_a_group_base(settings):
     assert not replace(settings, groups_base_dn="").configured
-    assert not replace(settings, groups_base_dn="",
-                       user_group="CN=HA-Users,OU=Groups,DC=example,DC=com").configured
+    assert not replace(
+        settings, groups_base_dn="", user_group="CN=HA-Users,OU=Groups,DC=example,DC=com"
+    ).configured
 
 
 def test_full_group_names_do_not_require_a_group_base(settings):
-    assert replace(settings, groups_base_dn="", admin_group="",
-                   user_group="CN=HA-Users,OU=Groups,DC=example,DC=com").configured
+    assert replace(
+        settings,
+        groups_base_dn="",
+        admin_group="",
+        user_group="CN=HA-Users,OU=Groups,DC=example,DC=com",
+    ).configured
 
 
 def test_old_options_keep_plain_ldap():

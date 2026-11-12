@@ -76,30 +76,49 @@ def test_full_group_dn_does_not_bypass_membership(directory, connections):
     connections.user.bind.assert_not_called()
 
 
-@pytest.mark.parametrize("group", [
-    "HA-Users",
-    "CN=HA-Users,OU=Groups,DC=example,DC=com",
-    "cn=ha-users, OU=Groups, DC=example, DC=com",
-])
+@pytest.mark.parametrize(
+    "group",
+    [
+        "HA-Users",
+        "CN=HA-Users,OU=Groups,DC=example,DC=com",
+        "cn=ha-users, OU=Groups, DC=example, DC=com",
+    ],
+)
 def test_ldap_client_authenticates_cn_and_full_dn(settings, tmp_path, monkeypatch, group):
     service_dn = "CN=Lookup,OU=Service Accounts,DC=example,DC=com"
     user_dn = "CN=Alice,OU=Users,DC=example,DC=com"
-    settings = replace(settings, ldap_server="ldap://dc.example.test", enable_ldaps=False,
-                       bind_user=service_dn, user_group=group, admin_group="")
+    settings = replace(
+        settings,
+        ldap_server="ldap://dc.example.test",
+        enable_ldaps=False,
+        bind_user=service_dn,
+        user_group=group,
+        admin_group="",
+    )
     directory = Directory(settings, CertificateStore(tmp_path))
 
     def connection_factory(server, user, password):
         connection = Connection(server, user=user, password=password, client_strategy=MOCK_SYNC)
-        connection.strategy.add_entry(service_dn, {
-            "objectClass": ["person", "user"], "userPassword": "lookup-secret",
-        })
-        connection.strategy.add_entry(user_dn, {
-            "objectClass": ["person", "user"], "objectCategory": "person",
-            "sAMAccountName": "Alice", "userPrincipalName": "alice@example.com",
-            "displayName": "Alice Example", "mail": "alice@example.com",
-            "memberOf": ["CN=HA-Users,OU=Groups,DC=example,DC=com"],
-            "userPassword": "user-secret",
-        })
+        connection.strategy.add_entry(
+            service_dn,
+            {
+                "objectClass": ["person", "user"],
+                "userPassword": "lookup-secret",
+            },
+        )
+        connection.strategy.add_entry(
+            user_dn,
+            {
+                "objectClass": ["person", "user"],
+                "objectCategory": "person",
+                "sAMAccountName": "Alice",
+                "userPrincipalName": "alice@example.com",
+                "displayName": "Alice Example",
+                "mail": "alice@example.com",
+                "memberOf": ["CN=HA-Users,OU=Groups,DC=example,DC=com"],
+                "userPassword": "user-secret",
+            },
+        )
         return connection
 
     monkeypatch.setattr(directory, "_connection", connection_factory)
