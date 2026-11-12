@@ -4,8 +4,8 @@ Local checks for version 3.0.0, run on Windows before any commit or push:
 
 | Check | Result |
 | --- | --- |
-| Python 3.13.1 test suite | 94 passed, 1 skipped |
-| Python 3.14.8 test suite | 94 passed, 1 skipped |
+| Python 3.13.1 test suite | 95 passed, 1 skipped |
+| Python 3.14.8 test suite | 95 passed, 1 skipped |
 | Python statement coverage | 94% overall; certificate and settings modules 100% |
 | Real TLS handshakes | Trusted CA and matching hostname accepted; untrusted CA and mismatched hostname rejected |
 | HTTP and authentication | API-key enforcement, Ingress TCP-peer isolation, CSRF, input/body limits, roles, rate limits and worker availability passed |
@@ -17,6 +17,8 @@ Local checks for version 3.0.0, run on Windows before any commit or push:
 | Alpine/Python 3.14 dependencies | Binary wheels resolved for both musllinux ARM64 and AMD64 |
 | Ruff, Prettier, JavaScript syntax, Bash syntax | Passed |
 | Git whitespace checks | Passed |
+| Published configuration failure | Reproduced YAML parsing failure from merge-conflict markers; corrected local metadata passes packaging checks |
+| Merge-conflict protection | Checks app files, repository metadata, README and CI definitions; detected all three affected files before the fix and passes afterward |
 | PNG branding | Icon 128 × 128; logo 440 × 100; generated from editable SVG sources |
 
 The skipped test checks POSIX mode `0600`, which Windows cannot enforce. The Linux CI job runs it. ldap3 emits two upstream pyasn1 deprecation warnings; these did not cause failures.

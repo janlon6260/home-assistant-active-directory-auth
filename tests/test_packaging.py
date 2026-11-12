@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import yaml
@@ -6,6 +7,17 @@ from ldapauth import __version__
 
 ROOT = Path(__file__).parents[1]
 APP = ROOT / "ldapauth"
+
+
+def test_distributed_files_have_no_merge_conflicts():
+    markers = re.compile(rb"^(?:<{7} |={7}\r?$|>{7} |\|{7} )", re.MULTILINE)
+    files = [ROOT / "README.md", ROOT / "repository.yaml"]
+    files.extend(
+        path for path in APP.rglob("*") if path.is_file() and "__pycache__" not in path.parts
+    )
+    files.extend(path for path in (ROOT / ".github").rglob("*") if path.is_file())
+    conflicts = [str(path.relative_to(ROOT)) for path in files if markers.search(path.read_bytes())]
+    assert not conflicts, f"Unresolved merge conflicts in distributed files: {conflicts}"
 
 
 def test_single_authoritative_configuration():

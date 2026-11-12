@@ -13,16 +13,24 @@ Sign in to Home Assistant with Microsoft Active Directory. Control access with A
 
 Requires Home Assistant OS on **amd64** or **aarch64**.
 
-[![Add the Active Directory Authentication repository to Home Assistant](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fjanlon6260%2Fhome-assistant-active-directory-auth)
+[![Open the Home Assistant app store](https://my.home-assistant.io/badges/supervisor_store.svg)](https://my.home-assistant.io/redirect/supervisor_store/)
 
-The button opens the add-repository dialog in your own Home Assistant. Confirm **Add**, then select **Active Directory Authentication** in the app store and choose **Install**. If the dialog does not open, use the manual steps below.
+The button opens the app store in your own Home Assistant. Add this repository using the steps below, then install the app. Opening the store does not add a repository or install an app automatically.
 
 1. Open **Settings → Apps → App store → ⋮ → Repositories**.
-2. Add `https://github.com/janlon6260/home-assistant-active-directory-auth`.
-3. Install **Active Directory Authentication**.
+2. If the repository below is not already listed, select **Add**, paste its URL and confirm.
+3. Return to the app store, search for **Active Directory Authentication**, open it and select **Install**.
 4. Complete the **Configuration** tab and start the app.
 5. Select **Open Web UI** to upload your AD CA certificate and download your configured authentication script.
 6. Follow the panel's sign-in setup steps, or see the [complete documentation](ldapauth/DOCS.md).
+
+Repository URL:
+
+```text
+https://github.com/janlon6260/home-assistant-active-directory-auth
+```
+
+If you used an add-repository link and only the app store opened, use steps 1–3 above. Home Assistant skips the confirmation when the repository is already present; an automatic-dialog failure has also been [reported upstream](https://github.com/home-assistant/my.home-assistant.io/issues/698).
 
 **Marketplace:** Home Assistant's Marketplace distributes community integrations, cards, themes and templates. This project runs as a Home Assistant OS app and is installed through **Apps**, rather than Marketplace. See the [Home Assistant repository documentation](https://contributors.home-assistant.io/marketplace/reference/repository-structure/).
 

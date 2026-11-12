@@ -1,10 +1,5 @@
-<<<<<<< HEAD
 name: "Active Directory Authentication"
 version: "3.0.0"
-=======
-name: "Active Directory authentication Add-on"
-version: "2.0.1"
->>>>>>> 84ff87661257a50a6147736f22ecdd92426dff54
 slug: "ldapauth"
 description: "Active Directory sign-in with secure LDAP, certificate management and Ingress"
 url: https://github.com/janlon6260/home-assistant-active-directory-auth
@@ -54,9 +49,3 @@ schema:
   ldaps_verify: bool?
   ldaps_ca_pem: str?
   debug_logging: bool?
-<<<<<<< HEAD
-=======
-ports:
-  "8000/tcp": 8000
-webui: "http://[HOST]:[PORT:8000]"
->>>>>>> 84ff87661257a50a6147736f22ecdd92426dff54

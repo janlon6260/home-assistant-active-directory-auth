@@ -115,6 +115,7 @@ There is now one authoritative `config.yaml`. The old duplicate `config.json` ha
 
 | Symptom | Action |
 | --- | --- |
+| Repository is listed, but the app is missing from the store | Check Supervisor logs under Settings → System → Logs. The published `ldapauth/config.yaml` must be valid YAML with no merge-conflict markers. After publishing corrected files, use Check for updates in the app store and reload the page. |
 | Setup needed | Fill out the service account, password, user base, group base and required group; save and restart. |
 | Directory connection fails | Check DNS, domain-controller port/firewall, service-account password, hostname match and CA validity. |
 | Certificate rejected | Export a valid issuing CA as PEM or DER, with the CA basic constraint. Remove all private-key material. |

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ARG BUILD_FROM=ghcr.io/home-assistant/base:3.24
 FROM $BUILD_FROM
 
@@ -23,13 +22,3 @@ LABEL io.hass.type="addon" \
     io.hass.version="${BUILD_VERSION}" \
     org.opencontainers.image.title="Active Directory Authentication" \
     org.opencontainers.image.source="https://github.com/janlon6260/home-assistant-active-directory-auth"
-=======
-FROM ghcr.io/home-assistant/base:3.24
-
-RUN apk add --no-cache python3 py3-pip py3-flask py3-ldap3 jq openssl
-
-COPY ldap_server.py /usr/bin/ldap_server.py
-RUN chmod +x /usr/bin/ldap_server.py
-
-COPY rootfs /
->>>>>>> 84ff87661257a50a6147736f22ecdd92426dff54
