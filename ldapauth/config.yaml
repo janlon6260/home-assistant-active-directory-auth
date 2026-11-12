@@ -1,25 +1,42 @@
-name: "Active Directory authentication Add-on"
-version: "2.0.0"
+name: "Active Directory Authentication"
+version: "3.0.0"
 slug: "ldapauth"
-description: "Active Directory authentication add-on for HAOS with LDAP and LDAPS support"
+description: "Active Directory sign-in with secure LDAP, certificate management and Ingress"
 url: https://github.com/janlon6260/home-assistant-active-directory-auth
 init: false
 arch:
   - amd64
   - aarch64
-  - armv7
-  - armhf
-  - i386
 startup: services
 boot: auto
-host_network: true
-log:
-  max_size: 1m
-  max_files: 1
+breaking_versions:
+  - "3.0.0"
+apparmor: true
+ingress: true
+ingress_port: 8099
+panel_icon: mdi:shield-account
+panel_title: Active Directory
+panel_admin: true
+watchdog: "http://[HOST]:[PORT:8000]/health"
+timeout: 60
 map:
-  - ssl:ro
-  - share:rw
-  - config:ro
+  - type: ssl
+    read_only: true
+  - type: homeassistant_config
+    path: /homeassistant
+    read_only: true
+options:
+  ldap_server: "ldaps://dc.example.com:636"
+  bind_user: ""
+  bind_password: ""
+  user_base_dn: ""
+  groups_base_dn: ""
+  user_group: ""
+  admin_group: ""
+  enable_ldaps: true
+  ldaps_verify: true
+  ldaps_ca_pem: ""
+  debug_logging: false
 schema:
   ldap_server: str
   bind_user: str
@@ -32,6 +49,3 @@ schema:
   ldaps_verify: bool?
   ldaps_ca_pem: str?
   debug_logging: bool?
-ports:
-  "8000/tcp": 8000
-webui: "http://[HOST]:[PORT:8000]"

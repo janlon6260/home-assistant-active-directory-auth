@@ -1,0 +1,13 @@
+* text=auto
+*.md text eol=lf
+*.json text eol=lf
+*.js text eol=lf
+*.css text eol=lf
+*.html text eol=lf
+*.py text eol=lf
+*.sh text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+ldapauth/rootfs/** text eol=lf
+LICENSE text eol=lf
+NOTICE text eol=lf

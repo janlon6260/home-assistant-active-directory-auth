@@ -1,5 +1,30 @@
 # Changelog
 
+## 3.0.0
+
+### Breaking changes
+
+- Replace the old shell authentication wrapper with the configured Python script downloaded through Ingress. Host port 8000 and anonymous authentication requests have been removed.
+- Supported HAOS architectures are now amd64 and aarch64.
+- Review existing Home Assistant command-line user roles: previous unsupported metadata could result in administrator access. The new wrapper explicitly assigns standard users and optional administrators on account creation.
+
+### Added
+
+- Production aiohttp server with S6 supervision, graceful shutdown and health watchdog.
+- Ingress administration panel in English and Norwegian with responsive light/dark presentation.
+- Validated public CA certificate upload, expiry/fingerprint display, atomic private storage and live reload for subsequent binds.
+- A custom AppArmor profile, isolated networking, CSRF protection and persistent API-key authentication.
+- Bounded LDAP workers, connection/search timeouts, authentication rate limits and reliable connection cleanup.
+- Automated tests, linting, dependency auditing and container-build CI.
+- Complete in-app documentation, configuration translations and migration guidance using current Apps and Marketplace terminology.
+
+### Fixed
+
+- Consolidated conflicting configuration files into one `config.yaml` with proper defaults.
+- Corrected Home Assistant provider configuration, metadata and administrator-role behavior.
+- Escaped usernames and group RDNs, disabled referrals and rejected ambiguous directory matches.
+- Removed unnecessary writable shared-folder access and public diagnostics.
+
 ## 2.0.0
 - Added LDAPS support
 

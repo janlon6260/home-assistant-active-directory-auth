@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Active Directory · Home Assistant</title>
+    <link rel="stylesheet" href="static/style.css" />
+    <script src="static/app.js" defer></script>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">AD</span
+          ><span>Active Directory <span class="byline">/ Home Assistant</span></span>
+        </div>
+        <label class="language"
+          ><span class="sr-only" data-i18n="language">Language</span
+          ><select id="language" aria-label="Language">
+            <option value="en">English</option>
+            <option value="nb">Norsk</option>
+          </select></label
+        >
+      </header>
+      <section class="hero" aria-labelledby="title">
+        <div>
+          <p class="eyebrow" data-i18n="eyebrow">IDENTITY & ACCESS</p>
+          <h1 id="title" data-i18n="title">Your directory. Connected.</h1>
+          <p class="intro" data-i18n="intro">
+            Manage the trusted connection between Active Directory and your home.
+          </p>
+        </div>
+        <span class="pill"
+          ><span class="dot"></span><span data-i18n="ingress">Home Assistant Ingress</span></span
+        >
+      </section>
+      <div id="notice" role="status" aria-live="polite" hidden></div>
+      <section class="overview" aria-label="Connection overview">
+        <article class="metric">
+          <span class="metric-label" data-i18n="directory">Directory</span
+          ><strong id="directory-state">—</strong><span id="directory-host" class="detail">—</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label" data-i18n="transport">Transport</span
+          ><strong id="transport-state">—</strong
+          ><span id="transport-detail" class="detail">—</span>
+        </article>
+        <article class="metric">
+          <span class="metric-label" data-i18n="trust">Certificate trust</span
+          ><strong id="trust-state">—</strong><span id="trust-detail" class="detail">—</span>
+        </article>
+      </section>
+      <div class="workspace">
+        <section class="card certificates" aria-labelledby="certificate-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow" data-i18n="secureConnection">SECURE CONNECTION</p>
+              <h2 id="certificate-title" data-i18n="certTitle">Trusted CA certificates</h2>
+            </div>
+            <span class="symbol" aria-hidden="true">↗</span>
+          </div>
+          <p class="muted" data-i18n="certIntro">
+            Upload your AD certificate authority to verify the identity of your domain controller
+            over LDAPS.
+          </p>
+          <div id="certificate-list" class="certificate-list"></div>
+          <label id="drop-zone" class="drop-zone" for="certificate-file">
+            <span class="upload-icon" aria-hidden="true">↑</span>
+            <strong data-i18n="chooseFile">Choose a CA certificate</strong>
+            <span data-i18n="dropHint"
+              >or drop a file here · PEM, CER, CRT or DER · up to 128 KiB</span
+            >
+            <input
+              id="certificate-file"
+              type="file"
+              accept=".pem,.cer,.crt,.der"
+              aria-describedby="certificate-help"
+            />
+          </label>
+          <p id="selected-file" class="file-selection" aria-live="polite"></p>
+          <p id="certificate-help" class="help" data-i18n="certHelp">
+            Use a public root or intermediate CA certificate. Private keys and domain controller
+            leaf certificates are rejected. Changes apply to the next connection.
+          </p>
+          <div class="actions">
+            <button id="upload" class="primary" disabled data-i18n="upload">
+              Upload certificate</button
+            ><button id="remove" class="quiet danger" hidden data-i18n="remove">
+              Remove uploaded certificate
+            </button>
+          </div>
+        </section>
+        <aside class="card connection" aria-labelledby="connection-title">
+          <p class="eyebrow" data-i18n="directoryAccess">DIRECTORY ACCESS</p>
+          <h2 id="connection-title" data-i18n="connectionTitle">Connection details</h2>
+          <dl>
+            <dt data-i18n="server">Server</dt>
+            <dd id="server">—</dd>
+            <dt data-i18n="userGroup">Allowed group</dt>
+            <dd id="users">—</dd>
+            <dt data-i18n="adminGroup">Administrator group</dt>
+            <dd id="admins">—</dd>
+          </dl>
+          <p class="help" data-i18n="optionsHelp">
+            Edit server and group settings in the app's Configuration tab, then restart the app.
+          </p>
+          <button id="check" class="secondary" disabled data-i18n="check">
+            Test directory connection
+          </button>
+          <p id="check-result" class="help" role="status" aria-live="polite"></p>
+        </aside>
+        <section class="card setup" aria-labelledby="setup-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow" data-i18n="getStarted">HOME ASSISTANT SIGN-IN</p>
+              <h2 id="setup-title" data-i18n="setupTitle">Connect your login</h2>
+            </div>
+            <span class="step">01 — 03</span>
+          </div>
+          <ol class="setup-steps">
+            <li>
+              <strong data-i18n="step1">Download the authentication script</strong>
+              <p data-i18n="step1Help">
+                Save this app's configured script as /config/auth-wrapper.py in Home Assistant. It
+                contains a private API key; keep it out of shared folders and Git.
+              </p>
+              <a class="button secondary" href="auth-wrapper.py" download data-i18n="download"
+                >Download auth-wrapper.py</a
+              >
+            </li>
+            <li>
+              <strong data-i18n="step2">Add the authentication provider</strong>
+              <p data-i18n="step2Help">
+                Merge this into configuration.yaml. Keep the local Home Assistant provider as a
+                fallback.
+              </p>
+              <pre tabindex="0"><code>homeassistant:
+  auth_providers:
+    - type: command_line
+      name: Active Directory
+      command: python3
+      args:
+        - /config/auth-wrapper.py
+      meta: true
+    - type: homeassistant</code></pre>
+            </li>
+            <li>
+              <strong data-i18n="step3">Restart Home Assistant</strong>
+              <p data-i18n="step3Help">
+                Keep your current administrator session open and test AD sign-in in a private
+                browser window. Members of the allowed group get access.
+              </p>
+            </li>
+          </ol>
+          <p class="info-note" data-i18n="roleNote">
+            New users receive the standard user role unless they belong to the configured
+            administrator group. Home Assistant applies these roles only when it creates the
+            account.
+          </p>
+        </section>
+      </div>
+      <footer>
+        <span data-i18n="footer">Active Directory Authentication</span><span id="version"></span>
+      </footer>
+    </main>
+    <dialog id="remove-dialog" aria-labelledby="remove-title">
+      <h2 id="remove-title" data-i18n="removeTitle">Remove the uploaded CA?</h2>
+      <p data-i18n="removeHelp">
+        New connections will use the configured PEM, an existing certificate file, or the system
+        trust store. LDAPS may fail if none of these trusts your domain controller.
+      </p>
+      <div class="actions">
+        <button id="cancel-remove" class="secondary" data-i18n="cancel">Cancel</button
+        ><button id="confirm-remove" class="primary destructive" data-i18n="confirmRemove">
+          Remove certificate
+        </button>
+      </div>
+    </dialog>
+  </body>
+</html>

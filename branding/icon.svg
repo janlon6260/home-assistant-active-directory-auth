@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Active Directory Authentication">
+  <rect width="128" height="128" rx="28" fill="#007da8"/>
+  <path d="M64 43v22M32 65h64M32 65v17M64 65v17M96 65v17" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="round"/>
+  <circle cx="64" cy="35" r="12" fill="#fff"/>
+  <rect x="21" y="80" width="22" height="22" rx="7" fill="#fff"/>
+  <rect x="53" y="80" width="22" height="22" rx="7" fill="#fff"/>
+  <rect x="85" y="80" width="22" height="22" rx="7" fill="#fff"/>
+</svg>

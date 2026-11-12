@@ -1,0 +1,34 @@
+configuration:
+  ldap_server:
+    name: Directory server
+    description: "Use the domain controller's DNS name, e.g. ldaps://dc.example.com:636. The name must match its TLS certificate."
+  bind_user:
+    name: Directory lookup account
+    description: "Read-only AD service account (UPN or distinguished name). Example: ha-bind@example.com."
+  bind_password:
+    name: Lookup account password
+    description: "Password for the read-only lookup account. Stored in the app's private options."
+  user_base_dn:
+    name: User search base
+    description: "Search users below this DN. Example: OU=Users,DC=example,DC=com."
+  groups_base_dn:
+    name: Group search base
+    description: "Parent DN of the access groups. Example: OU=Groups,DC=example,DC=com."
+  user_group:
+    name: Required access group
+    description: "Group CN required for every sign-in. Only direct membership is supported. Example: HA-Users."
+  admin_group:
+    name: Administrator group (optional)
+    description: "Direct members are assigned the administrator role when first created in Home Assistant. They must also belong to the access group. Empty means standard users only."
+  enable_ldaps:
+    name: Use encrypted LDAP (LDAPS)
+    description: "Recommended. Enforces LDAPS, normally on port 636. An ldaps:// URL always uses TLS."
+  ldaps_verify:
+    name: Verify the server certificate
+    description: "Keep enabled. Validates certificate trust and the server DNS name. Upload your CA from Open Web UI."
+  ldaps_ca_pem:
+    name: CA certificate PEM (optional)
+    description: "Alternative to file upload. Paste a public CA certificate bundle. A certificate uploaded through the web UI takes priority. Never paste private keys."
+  debug_logging:
+    name: Debug logging
+    description: "Enables application debug messages. Passwords and LDAP bind details are never logged."

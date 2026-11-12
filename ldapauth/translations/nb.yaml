@@ -1,0 +1,34 @@
+configuration:
+  ldap_server:
+    name: Katalogserver
+    description: "Bruk domenekontrollerens DNS-navn, f.eks. ldaps://dc.example.com:636. Navnet må samsvare med TLS-sertifikatet."
+  bind_user:
+    name: Oppslagskonto i katalogen
+    description: "AD-tjenestekonto med lesetilgang (UPN eller fullstendig DN). Eksempel: ha-bind@example.com."
+  bind_password:
+    name: Passord til oppslagskonto
+    description: "Passord for oppslagskontoen. Lagres i appens private innstillinger."
+  user_base_dn:
+    name: Søkeområde for brukere
+    description: "Brukere søkes under denne DN-en. Eksempel: OU=Users,DC=example,DC=com."
+  groups_base_dn:
+    name: Søkeområde for grupper
+    description: "Overordnet DN for tilgangsgruppene. Eksempel: OU=Groups,DC=example,DC=com."
+  user_group:
+    name: Påkrevd tilgangsgruppe
+    description: "Gruppens CN. Direkte medlemskap kreves ved hver innlogging. Eksempel: HA-Users. Nestede grupper støttes ikke."
+  admin_group:
+    name: Administratorgruppe (valgfritt)
+    description: "Direkte medlemmer får administratorrolle ved opprettelse i Home Assistant. De må også være medlem av tilgangsgruppen. Tom verdi gir kun vanlige brukere."
+  enable_ldaps:
+    name: Bruk kryptert LDAP (LDAPS)
+    description: "Anbefales. Krever LDAPS, normalt på port 636. En ldaps://-adresse bruker alltid TLS."
+  ldaps_verify:
+    name: Valider serversertifikatet
+    description: "Behold aktivert. Validerer sertifikattillit og serverens DNS-navn. Last opp CA-sertifikatet via Åpne nettgrensesnitt."
+  ldaps_ca_pem:
+    name: CA-sertifikat i PEM-format (valgfritt)
+    description: "Alternativ til filopplasting. Lim inn offentlige CA-sertifikater. Sertifikater lastet opp i nettgrensesnittet prioriteres. Lim aldri inn private nøkler."
+  debug_logging:
+    name: Feilsøkingslogging
+    description: "Aktiverer feilsøkingsmeldinger fra appen. Passord og LDAP-påloggingsdetaljer logges aldri."

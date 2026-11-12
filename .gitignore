@@ -1,0 +1,15 @@
+.venv/
+.venv314/
+.cache/
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+test-results/
+*.pem
+*.key
+*.cer
+*.crt

@@ -1,0 +1,11 @@
+{
+  "name": "home-assistant-active-directory-auth",
+  "private": true,
+  "scripts": {
+    "format": "prettier --write ldapauth/static",
+    "format:check": "prettier --check ldapauth/static"
+  },
+  "devDependencies": {
+    "prettier": "3.10.1"
+  }
+}
