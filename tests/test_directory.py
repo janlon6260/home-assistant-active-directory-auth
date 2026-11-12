@@ -4,6 +4,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
+from ldap3 import MOCK_SYNC, Connection
 from ldap3.core.exceptions import LDAPSocketOpenError
 
 from ldapauth.certificates import CertificateStore
@@ -43,6 +44,72 @@ def test_standard_user(directory, connections):
     connections.user.unbind.assert_called_once()
     connections.lookup.unbind.assert_called_once()
     assert connections.factory.call_args_list[1].args[1:] == (connections.entry.entry_dn, "secret")
+
+
+def test_full_access_group_dn_is_used_without_appending_base(directory, connections):
+    directory.settings = replace(
+        directory.settings, user_group="CN=HA-Users,OU=Groups,DC=example,DC=com"
+    )
+    assert directory.authenticate("alice", "secret").is_admin is False
+
+
+def test_full_group_dns_work_without_a_shared_base(directory, connections):
+    directory.settings = replace(
+        directory.settings,
+        groups_base_dn="",
+        user_group="CN=HA-Users,OU=Groups,DC=example,DC=com",
+        admin_group="CN=HA-Admins,OU=Privileged Groups,DC=example,DC=com",
+    )
+    connections.entry.entry_attributes_as_dict["memberOf"].append(
+        "CN=HA-Admins,OU=Privileged Groups,DC=example,DC=com"
+    )
+    assert directory.settings.configured
+    assert directory.authenticate("alice", "secret").is_admin is True
+
+
+def test_full_group_dn_does_not_bypass_membership(directory, connections):
+    directory.settings = replace(
+        directory.settings, user_group="CN=HA-Other,OU=Groups,DC=example,DC=com"
+    )
+    with pytest.raises(AuthenticationFailed):
+        directory.authenticate("alice", "secret")
+    connections.user.bind.assert_not_called()
+
+
+@pytest.mark.parametrize("group", [
+    "HA-Users",
+    "CN=HA-Users,OU=Groups,DC=example,DC=com",
+    "cn=ha-users, OU=Groups, DC=example, DC=com",
+])
+def test_ldap_client_authenticates_cn_and_full_dn(settings, tmp_path, monkeypatch, group):
+    service_dn = "CN=Lookup,OU=Service Accounts,DC=example,DC=com"
+    user_dn = "CN=Alice,OU=Users,DC=example,DC=com"
+    settings = replace(settings, ldap_server="ldap://dc.example.test", enable_ldaps=False,
+                       bind_user=service_dn, user_group=group, admin_group="")
+    directory = Directory(settings, CertificateStore(tmp_path))
+
+    def connection_factory(server, user, password):
+        connection = Connection(server, user=user, password=password, client_strategy=MOCK_SYNC)
+        connection.strategy.add_entry(service_dn, {
+            "objectClass": ["person", "user"], "userPassword": "lookup-secret",
+        })
+        connection.strategy.add_entry(user_dn, {
+            "objectClass": ["person", "user"], "objectCategory": "person",
+            "sAMAccountName": "Alice", "userPrincipalName": "alice@example.com",
+            "displayName": "Alice Example", "mail": "alice@example.com",
+            "memberOf": ["CN=HA-Users,OU=Groups,DC=example,DC=com"],
+            "userPassword": "user-secret",
+        })
+        return connection
+
+    monkeypatch.setattr(directory, "_connection", connection_factory)
+    for username in ("alice", "alice@example.com"):
+        identity = directory.authenticate(username, "user-secret")
+        assert identity.username == "alice"
+        assert identity.name == "Alice Example"
+        assert identity.is_admin is False
+    with pytest.raises(AuthenticationFailed, match="invalid_credentials"):
+        directory.authenticate("alice", "incorrect")
 
 
 def test_administrator_requires_both_groups(directory, connections):

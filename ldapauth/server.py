@@ -134,6 +134,7 @@ async def authenticate(request):
     runtime = request.app[RUNTIME]
     supplied = request.headers.get("Authorization", "").encode("utf-8")
     if not hmac.compare_digest(supplied, ("Bearer " + runtime.auth_token).encode("ascii")):
+        LOGGER.warning("Authentication script rejected: invalid API key; download a fresh wrapper")
         raise web.HTTPUnauthorized(text="Authentication failed.")
     try:
         if request.content_type == "application/json":
@@ -170,7 +171,7 @@ async def authenticate(request):
             runtime.directory.authenticate, username.strip(), password
         )
     except AuthenticationFailed as error:
-        LOGGER.info("Directory authentication denied")
+        LOGGER.info("Directory authentication denied: %s", error.reason)
         raise web.HTTPUnauthorized(text="Authentication failed.") from error
     except DirectoryUnavailable as error:
         LOGGER.warning(

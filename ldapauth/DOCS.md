@@ -18,9 +18,9 @@ Set the following options in the app's **Configuration** tab. Save and restart t
 | `bind_user` | `ha-bind@example.com`, or a full service-account DN. |
 | `bind_password` | Password for the read-only lookup account. |
 | `user_base_dn` | `OU=Users,DC=example,DC=com`. Searches the subtree. |
-| `groups_base_dn` | `OU=Groups,DC=example,DC=com`; parent DN shared by the access groups. |
-| `user_group` | `HA-Users`; the group's CN. Required for every user, including administrators. |
-| `admin_group` | Optional group CN, e.g. `HA-Admins`. Empty disables administrator assignment. |
+| `groups_base_dn` | `OU=Groups,DC=example,DC=com`; parent DN used with short group names. Can be empty when all configured groups use full DNs. |
+| `user_group` | Group name, e.g. `HA-Users`, or full DN, e.g. `CN=HA-Users,OU=Groups,DC=example,DC=com`. Required for every user, including administrators. |
+| `admin_group` | Optional group name or full DN, e.g. `HA-Admins` or `CN=HA-Admins,OU=Privileged Groups,DC=example,DC=com`. Empty disables administrator assignment. |
 | `enable_ldaps` | Default `true` for new installations. Forces TLS; port 389 becomes 636. Existing explicit settings are retained. An `ldaps://` URL always uses TLS. |
 | `ldaps_verify` | Default `true`. Validates the certificate chain and server hostname. |
 | `ldaps_ca_pem` | Optional public CA PEM bundle, as an alternative to upload. Literal `\n` line breaks are accepted. |
@@ -81,7 +81,7 @@ The generated script contains a secret. Do not commit it, publish it, or place i
 - Home Assistant creates a separate command-line-provider account. A similarly named local account is not automatically merged.
 - Home Assistant applies the returned name and group when the account is first created. Subsequent AD group changes do **not** change the existing Home Assistant role. Review existing accounts manually under **Settings → People → Users**.
 - Every new sign-in checks AD access, but existing Home Assistant sessions and refresh tokens remain managed by Home Assistant. Removing someone from an AD group does not immediately revoke existing sessions; revoke their Home Assistant sessions or disable their account when required.
-- Nested groups, primary-group membership and groups in different parent DNs are not supported.
+- Nested groups and primary-group membership are not supported. Groups in different parent DNs can be configured using full DNs.
 - The command-line provider uses its supplied username as identity. Signing in using different aliases, casing or a UPN instead of a short name can create separate Home Assistant accounts. Use one consistent login format.
 
 See the [official command-line authentication documentation](https://www.home-assistant.io/docs/authentication/providers/#command-line) for metadata and role behavior.
@@ -120,6 +120,8 @@ There is now one authoritative `config.yaml`. The old duplicate `config.json` ha
 | Directory connection fails | Check DNS, domain-controller port/firewall, service-account password, hostname match and CA validity. |
 | Certificate rejected | Export a valid issuing CA as PEM or DER, with the CA basic constraint. Remove all private-key material. |
 | Connection test works, login fails | Check direct access-group membership, the user search base, password, account expiry/lockout and a unique username. |
+| Full group DN fails on version 3.0.0 | Upgrade to 3.0.1, or use the group's short CN in `user_group` and its parent DN in `groups_base_dn`. Version 3.0.0 incorrectly appended the base DN to an already complete group DN. |
+| Core reports `Login attempt or request with invalid authentication` | This identifies the browser's failed login, not its underlying cause or an AD server. Check the app log at the same time. In 3.0.1, `required_group_missing`, `user_not_found`, `ambiguous_user`, `invalid_credentials` and `not_configured` identify the failing step without exposing submitted credentials. An invalid script API key has a separate warning. |
 | HTTP 401 from `/auth` | Replace the wrapper with a fresh download, or check the user's credentials and group membership. |
 | HTTP 429 | Wait one minute; review repeated login attempts. Limits reset on restart. |
 | HTTP 503 | The directory is unavailable or all four workers are occupied; check directory health. |

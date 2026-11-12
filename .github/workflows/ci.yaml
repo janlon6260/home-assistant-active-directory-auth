@@ -48,7 +48,7 @@ jobs:
           push: false
           load: true
           tags: local/ad-auth:ci
-          build-args: BUILD_VERSION=3.0.0
+          build-args: BUILD_VERSION=3.0.1
       - name: Verify container startup and health
         shell: bash
         run: |

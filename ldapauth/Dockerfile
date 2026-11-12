@@ -15,7 +15,7 @@ COPY static /opt/ldapauth/static
 COPY rootfs /
 RUN chmod 0755 /etc/s6-overlay/s6-rc.d/ldapauth/run
 
-ARG BUILD_VERSION=3.0.0
+ARG BUILD_VERSION=3.0.1
 LABEL io.hass.type="addon" \
     org.opencontainers.image.licenses="Apache-2.0" \
     io.hass.name="Active Directory Authentication" \

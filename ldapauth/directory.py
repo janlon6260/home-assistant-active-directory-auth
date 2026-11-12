@@ -4,16 +4,25 @@ from dataclasses import dataclass
 from ldap3 import NONE, SUBTREE, Connection, Server, Tls
 from ldap3.core.exceptions import LDAPException
 from ldap3.utils.conv import escape_filter_chars
-from ldap3.utils.dn import escape_rdn
 
 from .certificates import CertificateStore
+from .groups import normalize_dn, resolve_group_dn
 from .settings import Settings
 
 LDAP_TIMEOUT = 5
 
 
 class AuthenticationFailed(Exception):
-    pass
+    def __init__(self, reason: str = "invalid_credentials"):
+        allowed = {
+            "invalid_credentials",
+            "not_configured",
+            "user_not_found",
+            "ambiguous_user",
+            "required_group_missing",
+        }
+        self.reason = reason if reason in allowed else "invalid_credentials"
+        super().__init__(self.reason)
 
 
 class DirectoryUnavailable(Exception):
@@ -73,8 +82,10 @@ class Directory:
         )
 
     def authenticate(self, username: str, password: str) -> Identity:
-        if not username or not password or not self.settings.configured:
+        if not username or not password:
             raise AuthenticationFailed
+        if not self.settings.configured:
+            raise AuthenticationFailed("not_configured")
         lookup = user = None
         try:
             server = self._server()
@@ -96,8 +107,10 @@ class Directory:
             )
             if lookup.result.get("result") != 0:
                 raise DirectoryUnavailable
+            if not lookup.entries:
+                raise AuthenticationFailed("user_not_found")
             if len(lookup.entries) != 1:
-                raise AuthenticationFailed
+                raise AuthenticationFailed("ambiguous_user")
             entry = lookup.entries[0]
             attributes = {
                 key.lower(): value for key, value in entry.entry_attributes_as_dict.items()
@@ -107,10 +120,10 @@ class Directory:
                 values = attributes.get(key.lower(), [])
                 return str(values[0]) if values else default
 
-            groups = {str(group).casefold() for group in attributes.get("memberof", [])}
+            groups = {normalize_dn(str(group)) for group in attributes.get("memberof", [])}
             required = self._group_dn(self.settings.user_group)
             if required not in groups:
-                raise AuthenticationFailed
+                raise AuthenticationFailed("required_group_missing")
             user = self._connection(server, entry.entry_dn, password)
             if not user.bind():
                 if user.result.get("result") == 49:
@@ -136,7 +149,7 @@ class Directory:
                         pass
 
     def _group_dn(self, group: str) -> str:
-        return f"CN={escape_rdn(group)},{self.settings.groups_base_dn}".casefold()
+        return resolve_group_dn(group, self.settings.groups_base_dn)
 
     def check(self) -> None:
         connection = None

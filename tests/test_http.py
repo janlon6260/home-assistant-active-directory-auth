@@ -110,6 +110,18 @@ async def test_auth_denied_without_secret_leak(auth_client, runtime, caplog, err
     assert "alice" not in caplog.text
 
 
+async def test_group_denial_reason_is_logged_without_exposing_details(auth_client, runtime, caplog):
+    runtime.directory.authenticate.side_effect = AuthenticationFailed("required_group_missing")
+    with caplog.at_level("INFO", logger="ldapauth.server"):
+        response = await auth_client.post("/auth", headers=headers(runtime),
+                                          json={"username": "alice", "password": "secret"})
+    assert response.status == 401
+    assert "required_group_missing" in caplog.text
+    assert "required_group_missing" not in await response.text()
+    assert "alice" not in caplog.text
+    assert "secret" not in caplog.text
+
+
 async def test_auth_rate_limit(auth_client, runtime):
     for _ in range(10):
         response = await auth_client.post(

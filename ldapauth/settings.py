@@ -1,6 +1,10 @@
 from dataclasses import dataclass, field
 from urllib.parse import urlsplit
 
+from ldap3.core.exceptions import LDAPInvalidDnError
+
+from .groups import resolve_group_dn
+
 
 @dataclass(frozen=True)
 class Settings:
@@ -46,13 +50,20 @@ class Settings:
 
     @property
     def configured(self) -> bool:
-        return all(
+        if not all(
             value.strip()
             for value in (
                 self.bind_user,
                 self.bind_password,
                 self.user_base_dn,
-                self.groups_base_dn,
                 self.user_group,
             )
-        )
+        ):
+            return False
+        try:
+            resolve_group_dn(self.user_group, self.groups_base_dn)
+            if self.admin_group.strip():
+                resolve_group_dn(self.admin_group, self.groups_base_dn)
+        except (ValueError, LDAPInvalidDnError):
+            return False
+        return True

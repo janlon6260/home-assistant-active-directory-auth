@@ -13,13 +13,13 @@ configuration:
     description: "Search users below this DN. Example: OU=Users,DC=example,DC=com."
   groups_base_dn:
     name: Group search base
-    description: "Parent DN of the access groups. Example: OU=Groups,DC=example,DC=com."
+    description: "Parent DN used for short group names. Example: OU=Groups,DC=example,DC=com. May be empty when every configured group is a full DN."
   user_group:
     name: Required access group
-    description: "Group CN required for every sign-in. Only direct membership is supported. Example: HA-Users."
+    description: "Group name or full DN required for every sign-in. Examples: HA-Users or CN=HA-Users,OU=Groups,DC=example,DC=com. Only direct membership is supported."
   admin_group:
     name: Administrator group (optional)
-    description: "Direct members are assigned the administrator role when first created in Home Assistant. They must also belong to the access group. Empty means standard users only."
+    description: "Group name or full DN. Direct members receive the administrator role when first created in Home Assistant and must also belong to the access group. Empty means standard users only."
   enable_ldaps:
     name: Use encrypted LDAP (LDAPS)
     description: "Recommended. Enforces LDAPS, normally on port 636. An ldaps:// URL always uses TLS."

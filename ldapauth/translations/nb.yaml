@@ -13,13 +13,13 @@ configuration:
     description: "Brukere søkes under denne DN-en. Eksempel: OU=Users,DC=example,DC=com."
   groups_base_dn:
     name: Søkeområde for grupper
-    description: "Overordnet DN for tilgangsgruppene. Eksempel: OU=Groups,DC=example,DC=com."
+    description: "Overordnet DN som brukes ved korte gruppenavn. Eksempel: OU=Groups,DC=example,DC=com. Kan være tom når alle angitte grupper bruker full DN."
   user_group:
     name: Påkrevd tilgangsgruppe
-    description: "Gruppens CN. Direkte medlemskap kreves ved hver innlogging. Eksempel: HA-Users. Nestede grupper støttes ikke."
+    description: "Gruppenavn eller full DN som kreves ved hver innlogging. Eksempler: HA-Users eller CN=HA-Users,OU=Groups,DC=example,DC=com. Kun direkte medlemskap støttes."
   admin_group:
     name: Administratorgruppe (valgfritt)
-    description: "Direkte medlemmer får administratorrolle ved opprettelse i Home Assistant. De må også være medlem av tilgangsgruppen. Tom verdi gir kun vanlige brukere."
+    description: "Gruppenavn eller full DN. Direkte medlemmer får administratorrolle ved opprettelse i Home Assistant og må også være medlem av tilgangsgruppen. Tom verdi gir kun vanlige brukere."
   enable_ldaps:
     name: Bruk kryptert LDAP (LDAPS)
     description: "Anbefales. Krever LDAPS, normalt på port 636. En ldaps://-adresse bruker alltid TLS."

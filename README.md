@@ -71,9 +71,9 @@ Licensed under [Apache-2.0](LICENSE).
 | **bind_user**      | Read-only AD account used to search for users and groups (e.g. `ha-bind@example.com`)                |
 | **bind_password**  | Password for the bind user                                                                                            |
 | **user_base_dn**   | Distinguished Name of the OU containing user accounts                                                                 |
-| **groups_base_dn** | Distinguished Name of the OU containing security groups                                                               |
-| **user_group**     | Users must be a member of this group to log in                                                                        |
-| **admin_group**    | Optional. Users in this group will be marked as admin                                                                 |
+| **groups_base_dn** | Parent DN used with short group names; optional when all configured groups use full DNs                               |
+| **user_group**     | Required access group, specified as a short name or a full DN                                                         |
+| **admin_group**    | Optional group name or full DN; members receive the administrator role when their Home Assistant account is created   |
 | **enable_ldaps**   | Enables secure LDAPS connection (port 636)                                                                            |
 | **ldaps_verify**   | Validates the certificate presented by the domain controller                                                          |
 | **ldaps_ca_pem**   | Optional text field for pasting PEM certificate if not using `/config/certs/ldap-cert.pem`                            |
