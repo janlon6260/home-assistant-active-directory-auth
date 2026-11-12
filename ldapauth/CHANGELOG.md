@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.1
+Fix:
+- Fixed installation failure on recent Home Assistant OS and Supervisor versions.
+- Removed dependency on the deprecated BUILD_FROM build argument.
+- Explicitly defined the Home Assistant base image in the Dockerfile to ensure compatibility with the updated Supervisor build system.
+
 ## 2.0.0
 - Added LDAPS support
 
