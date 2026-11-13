@@ -29,9 +29,9 @@ const messages = {
     check: "Test directory connection",
     getStarted: "HOME ASSISTANT SIGN-IN",
     setupTitle: "Connect your login",
-    step1: "Download the authentication script",
+    step1: "Download and install the authentication script",
     step1Help:
-      "Save this app's configured script as /config/auth-wrapper.py in Home Assistant. It contains a private API key; keep it out of shared folders and Git.",
+      "Download the script, then copy it from your computer into the same Home Assistant folder as configuration.yaml using File editor or Studio Code Server. Name it auth-wrapper.py, without a .txt suffix. Core reads it as /config/auth-wrapper.py. Downloading alone does not install it. It contains a private API key; keep it out of shared folders and Git.",
     download: "Download auth-wrapper.py",
     step2: "Add the authentication provider",
     step2Help:
@@ -73,6 +73,17 @@ const messages = {
     setupWarning:
       "Complete the required fields in the app's Configuration tab, then restart the app.",
     empty: "No custom CA. The system trust store is used for verified LDAPS.",
+    diagnosticsEyebrow: "TROUBLESHOOTING",
+    diagnosticsTitle: "Authentication diagnostics",
+    refreshDiagnostics: "Refresh log",
+    diagnosticsHelp:
+      "Read recent application messages without a live log stream. The request count shows whether the login script has reached this app since startup.",
+    noAuthRequests:
+      "No authentication requests received since startup. Check the Active Directory provider in Core, the configured script and its connection to the app.",
+    authRequests: "Authentication requests received",
+    lastAuthResponse: "Last completed response",
+    noAuthResponse: "No completed response yet",
+    noDiagnosticLogs: "No application log entries are available yet.",
   },
   nb: {
     language: "Språk",
@@ -103,9 +114,9 @@ const messages = {
     check: "Test katalogforbindelse",
     getStarted: "INNLOGGING I HOME ASSISTANT",
     setupTitle: "Koble til innloggingen",
-    step1: "Last ned autentiseringsskriptet",
+    step1: "Last ned og installer autentiseringsskriptet",
     step1Help:
-      "Lagre appens ferdig konfigurerte skript som /config/auth-wrapper.py i Home Assistant. Det inneholder en privat API-nøkkel og må holdes utenfor delte mapper og Git.",
+      "Last ned skriptet, og kopier det fra PC-en til samme mappe som configuration.yaml i Home Assistant med File editor eller Studio Code Server. Filen skal hete auth-wrapper.py, uten .txt til slutt. Core leser den som /config/auth-wrapper.py. Nedlasting alene installerer ikke filen. Den inneholder en privat API-nøkkel og må holdes utenfor delte mapper og Git.",
     download: "Last ned auth-wrapper.py",
     step2: "Legg til autentiseringstilbyderen",
     step2Help:
@@ -146,6 +157,17 @@ const messages = {
       "LDAP bruker ikke validert TLS. Aktiver LDAPS og sertifikatvalidering under Konfigurasjon.",
     setupWarning: "Fyll ut obligatoriske felt i appens Konfigurasjon-fane, og start appen på nytt.",
     empty: "Ingen egendefinert CA. Systemets sertifikatlager brukes til validert LDAPS.",
+    diagnosticsEyebrow: "FEILSØKING",
+    diagnosticsTitle: "Diagnostikk for innlogging",
+    refreshDiagnostics: "Oppdater logg",
+    diagnosticsHelp:
+      "Les de siste appmeldingene uten en løpende loggstrøm. Antall forespørsler viser om innloggingsskriptet har nådd appen siden oppstart.",
+    noAuthRequests:
+      "Ingen innloggingsforespørsler mottatt siden oppstart. Kontroller Active Directory-tilbyderen i Core, skriptet og forbindelsen til appen.",
+    authRequests: "Innloggingsforespørsler mottatt",
+    lastAuthResponse: "Siste fullførte svar",
+    noAuthResponse: "Ingen fullførte svar ennå",
+    noDiagnosticLogs: "Ingen appmeldinger er tilgjengelige ennå.",
   },
 };
 let language = /^(nb|nn|no)/i.test(navigator.language) ? "nb" : "en";
@@ -158,6 +180,7 @@ let selectedFile = null;
 let pending = false;
 let noticeKey = null;
 let connectionKey = null;
+let diagnosticState = null;
 const $ = (id) => document.getElementById(id);
 const t = (key) => messages[language][key] || key;
 const set = (id, value) => {
@@ -187,7 +210,37 @@ function translate() {
   if (state) render();
   if (noticeKey) set("notice", t(noticeKey));
   if (connectionKey) set("check-result", t(connectionKey));
+  renderDiagnostics();
 }
+function renderDiagnostics() {
+  if (!diagnosticState) return;
+  const last =
+    diagnosticState.last_status === null
+      ? t("noAuthResponse")
+      : `${t("lastAuthResponse")}: HTTP ${diagnosticState.last_status}`;
+  set(
+    "diagnostics-summary",
+    diagnosticState.auth_requests === 0
+      ? t("noAuthRequests")
+      : `${t("authRequests")}: ${diagnosticState.auth_requests}. ${last}`,
+  );
+  set(
+    "diagnostics-log",
+    diagnosticState.logs.length ? diagnosticState.logs.join("\n") : t("noDiagnosticLogs"),
+  );
+}
+async function refreshDiagnostics() {
+  $("refresh-diagnostics").disabled = true;
+  try {
+    diagnosticState = await api("api/diagnostics");
+    renderDiagnostics();
+  } catch (error) {
+    set("diagnostics-summary", error.message);
+  } finally {
+    $("refresh-diagnostics").disabled = false;
+  }
+}
+$("refresh-diagnostics").addEventListener("click", refreshDiagnostics);
 function render() {
   set("directory-state", t(state.configured ? "configured" : "notConfigured"));
   set("directory-host", state.server.host);
@@ -362,5 +415,6 @@ api("api/status")
     if (!state.configured) notifyKey("setupWarning");
     else if (!state.server.tls || !state.server.verify) notifyKey("tlsWarning", true);
     else if (!state.certificate.valid) notify(state.certificate.error, true);
+    refreshDiagnostics();
   })
   .catch(() => notifyKey("loadError", true));

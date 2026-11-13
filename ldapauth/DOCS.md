@@ -52,7 +52,7 @@ An invalid custom certificate fails closed; it does not silently fall back. **Re
 
 ## Configure Home Assistant sign-in
 
-1. From the Ingress panel, download **auth-wrapper.py**. This copy includes the app's internal hostname and a private API key. Save it inside the Home Assistant configuration folder as `/config/auth-wrapper.py`, readable only by the account running Core (for example, `chmod 600 /config/auth-wrapper.py`). The file need not be executable.
+1. From the Ingress panel, download **auth-wrapper.py**. This copy includes the app's internal hostname and a private API key. The browser saves it on your computer; downloading does not install it in Home Assistant. Using File editor or Studio Code Server, copy the file into **the same folder as `configuration.yaml`**. Name it exactly `auth-wrapper.py`, without a `.txt` suffix or a duplicate-download number. Core reads that file as `/config/auth-wrapper.py`; another app may display the same configuration folder as `/homeassistant`. Keep it readable only by the account running Core (for example, `chmod 600` on the installed file from a trusted terminal). The file need not be executable. Do not copy the unconfigured template directly from GitHub.
 2. Merge the following into your existing `configuration.yaml`. Keep a single `homeassistant:` section and retain your other authentication providers as needed:
 
 ```yaml
@@ -68,6 +68,8 @@ homeassistant:
 ```
 
 3. Check your Home Assistant configuration, restart Core, and test AD sign-in in a private browser window while retaining your local administrator session.
+
+If Core reports `can't open file '/config/auth-wrapper.py': [Errno 2] No such file or directory`, the script has not been installed at the configured path. Fix the file placement and retry. Adding or replacing the file at the existing path does not require a Core restart; changing `configuration.yaml` does.
 
 Use the absolute command `/usr/local/bin/python3` in Home Assistant Core. The command-line provider passes only `username` and `password` to the process and does not inherit Core's normal `PATH`; a bare `python3` may fail before the script runs.
 
@@ -115,6 +117,10 @@ There is now one authoritative `config.yaml`. The old duplicate `config.json` ha
 
 ## Troubleshooting
 
+Open **Web UI → Authentication diagnostics** and select **Refresh log** after an attempt. This reads a finite response containing the latest 100 application messages, truncated to 1,024 characters each, without depending on Home Assistant's live log stream. The buffer and request count reset when the app restarts. Configured bind passwords and API keys are redacted, submitted passwords are never logged, and the endpoint is only available through Ingress.
+
+The counter includes rejected requests. Zero means no authentication request has reached the app's `/auth` handler since startup; check Core's provider configuration and script startup errors. A nonzero count and the last completed HTTP status show that a request reached the service. Enable `debug_logging` and restart the app for detailed application stages. The connection-test button checks only the lookup account and TLS; it does not submit a user authentication request.
+
 | Symptom | Action |
 | --- | --- |
 | Repository is listed, but the app is missing from the store | Check Supervisor logs under Settings → System → Logs. The published `ldapauth/config.yaml` must be valid YAML with no merge-conflict markers. After publishing corrected files, use Check for updates in the app store and reload the page. |
@@ -125,8 +131,9 @@ There is now one authoritative `config.yaml`. The old duplicate `config.json` ha
 | Full group DN fails on version 3.0.0 | Upgrade to 3.0.1, or use the group's short CN in `user_group` and its parent DN in `groups_base_dn`. Version 3.0.0 incorrectly appended the base DN to an already complete group DN. |
 | Core reports `Login attempt or request with invalid authentication` | This identifies the browser's failed login, not its underlying cause or an AD server. Check the app log at the same time. In 3.0.1, `required_group_missing`, `user_not_found`, `ambiguous_user`, `invalid_credentials` and `not_configured` identify the failing step without exposing submitted credentials. An invalid script API key has a separate warning. |
 | No authentication requests reach the app | Use `command: /usr/local/bin/python3` for the downloaded wrapper and restart Home Assistant Core. The command-line provider does not inherit the normal `PATH`. Check Core's log for script startup errors. |
+| Core cannot open `/config/auth-wrapper.py` | Download the configured script from this app's Ingress panel and copy it from your computer into the same Home Assistant folder as `configuration.yaml`. Check the exact filename, including a possible hidden `.txt` suffix. No app requests or LDAP logs are expected until the script can start. |
 | Debug is enabled, but the log only contains startup messages | Save and restart the app after changing `debug_logging`. Version 3.0.2 adds traces for incoming auth requests, lookup bind, user search, group membership and user bind. If there is no incoming-request trace, inspect the Core command and script connection first. |
-| The app's Log tab spins, but SSH can retrieve logs | Read-only `ha apps logs <app-slug>` retrieves app output through the CLI. A successful SSH read shows that log entries exist; a timeout in the UI also requires checking the Supervisor/Core log for the failing request. |
+| The app's Log tab spins, but SSH can retrieve logs | Use Web UI → Authentication diagnostics → Refresh log, or read-only `ha apps logs <app-slug>`. Try the native log tab from a phone or another computer to isolate client-side filtering. An [upstream report](https://github.com/home-assistant/supervisor/issues/6844#issuecomment-5170851317) confirmed desktop web protection buffering the never-ending log stream; that cause has not been established for every installation. Check Supervisor/Core logs if the issue remains. |
 | HTTP 401 from `/auth` | Replace the wrapper with a fresh download, or check the user's credentials and group membership. |
 | HTTP 429 | Wait one minute; review repeated login attempts. Limits reset on restart. |
 | HTTP 503 | The directory is unavailable or all four workers are occupied; check directory health. |

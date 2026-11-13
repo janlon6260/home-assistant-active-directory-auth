@@ -110,6 +110,30 @@
           </button>
           <p id="check-result" class="help" role="status" aria-live="polite"></p>
         </aside>
+        <section class="card setup" aria-labelledby="diagnostics-title">
+          <div class="card-heading">
+            <div>
+              <p class="eyebrow" data-i18n="diagnosticsEyebrow">TROUBLESHOOTING</p>
+              <h2 id="diagnostics-title" data-i18n="diagnosticsTitle">
+                Authentication diagnostics
+              </h2>
+            </div>
+            <button id="refresh-diagnostics" class="secondary" data-i18n="refreshDiagnostics">
+              Refresh log
+            </button>
+          </div>
+          <p class="help" data-i18n="diagnosticsHelp">
+            Read recent application messages without a live log stream. The request count shows
+            whether the login script has reached this app since startup.
+          </p>
+          <p id="diagnostics-summary" class="help" role="status" aria-live="polite"></p>
+          <pre
+            id="diagnostics-log"
+            class="diagnostics-log"
+            tabindex="0"
+            aria-labelledby="diagnostics-title"
+          ></pre>
+        </section>
         <section class="card setup" aria-labelledby="setup-title">
           <div class="card-heading">
             <div>
@@ -120,10 +144,13 @@
           </div>
           <ol class="setup-steps">
             <li>
-              <strong data-i18n="step1">Download the authentication script</strong>
+              <strong data-i18n="step1">Download and install the authentication script</strong>
               <p data-i18n="step1Help">
-                Save this app's configured script as /config/auth-wrapper.py in Home Assistant. It
-                contains a private API key; keep it out of shared folders and Git.
+                Download the script, then copy it from your computer into the same Home Assistant
+                folder as configuration.yaml using File editor or Studio Code Server. Name it
+                auth-wrapper.py, without a .txt suffix. Core reads it as /config/auth-wrapper.py.
+                Downloading alone does not install it. It contains a private API key; keep it out of
+                shared folders and Git.
               </p>
               <a class="button secondary" href="auth-wrapper.py" download data-i18n="download"
                 >Download auth-wrapper.py</a

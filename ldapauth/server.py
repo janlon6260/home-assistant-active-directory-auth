@@ -15,6 +15,7 @@ from aiohttp import web
 
 from . import __version__
 from .certificates import MAX_CERTIFICATE_BYTES, CertificateStore, private_write
+from .diagnostics import Diagnostics
 from .directory import AuthenticationFailed, Directory, DirectoryUnavailable
 from .settings import Settings
 
@@ -76,6 +77,7 @@ class Runtime:
         ):
             raise ValueError("Invalid stored authentication token")
         self.csrf_token = secrets.token_urlsafe(32)
+        self.diagnostics = Diagnostics((settings.bind_password, self.auth_token))
         self.rate_limit = RateLimit()
         self.pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="ldap")
         self.slots = asyncio.Semaphore(4)
@@ -132,6 +134,22 @@ async def health(request):
 
 
 async def authenticate(request):
+    diagnostics = request.app[RUNTIME].diagnostics
+    diagnostics.auth_requests += 1
+    try:
+        response = await authenticate_request(request)
+    except web.HTTPException as error:
+        diagnostics.last_status = error.status
+        raise
+    except Exception as error:
+        diagnostics.last_status = 500
+        LOGGER.error("Unexpected authentication failure (%s)", type(error).__name__)
+        raise web.HTTPInternalServerError(text="Authentication service error.") from None
+    diagnostics.last_status = response.status
+    return response
+
+
+async def authenticate_request(request):
     LOGGER.debug("Authentication request received on the internal endpoint")
     runtime = request.app[RUNTIME]
     supplied = request.headers.get("Authorization", "").encode("utf-8")
@@ -216,6 +234,10 @@ async def status(request):
     )
 
 
+async def diagnostics(request):
+    return web.json_response(request.app[RUNTIME].diagnostics.snapshot())
+
+
 async def upload_certificate(request):
     if request.content_type != "application/octet-stream":
         raise web.HTTPUnsupportedMediaType(
@@ -288,6 +310,7 @@ def create_ingress_app(runtime: Runtime) -> web.Application:
             web.get("/", index),
             web.get("/static/{filename}", asset),
             web.get("/api/status", status),
+            web.get("/api/diagnostics", diagnostics),
             web.post("/api/certificate", upload_certificate),
             web.delete("/api/certificate", delete_certificate),
             web.post("/api/check", check_directory),
@@ -312,8 +335,10 @@ def production_app(data_dir: Path = Path("/data"), *, ingress_port: int = 8099) 
         logging.DEBUG if settings.debug_logging else logging.INFO
     )
     logging.getLogger("ldap3").setLevel(logging.WARNING)
-    LOGGER.info("Application logging configured (debug=%s)", settings.debug_logging)
     runtime = Runtime(settings, data_dir)
+    app_logger = logging.getLogger("ldapauth")
+    app_logger.addHandler(runtime.diagnostics)
+    LOGGER.info("Application logging configured (debug=%s)", settings.debug_logging)
     app = create_auth_app(runtime)
 
     async def ingress_lifecycle(_app):
@@ -337,6 +362,8 @@ def production_app(data_dir: Path = Path("/data"), *, ingress_port: int = 8099) 
         finally:
             await runner.cleanup()
             await asyncio.to_thread(runtime.pool.shutdown, wait=True, cancel_futures=True)
+            app_logger.removeHandler(runtime.diagnostics)
+            runtime.diagnostics.close()
 
     app.cleanup_ctx.append(ingress_lifecycle)
     return app

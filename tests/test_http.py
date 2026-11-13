@@ -49,7 +49,9 @@ async def test_production_startup_and_shutdown(aiohttp_client, settings, tmp_pat
     assert (await client.get("/api/status")).status == 404
     runtime = app[server.RUNTIME]
     assert len(runtime.auth_token) >= 32
+    assert runtime.diagnostics in server.logging.getLogger("ldapauth").handlers
     await client.close()
+    assert runtime.diagnostics not in server.logging.getLogger("ldapauth").handlers
 
     with pytest.raises(RuntimeError, match="shutdown"):
         runtime.pool.submit(lambda: None)
@@ -83,6 +85,13 @@ async def test_debug_option_produces_safe_application_traces(
     assert "alice" not in caplog.text
     assert "user-secret" not in caplog.text
     assert runtime.auth_token not in caplog.text
+    snapshot = runtime.diagnostics.snapshot()
+    assert snapshot["auth_requests"] == 1
+    assert snapshot["last_status"] == 401
+    assert any("Application logging configured (debug=True)" in line for line in snapshot["logs"])
+    assert any("Authentication request received" in line for line in snapshot["logs"])
+    assert "user-secret" not in str(snapshot)
+    assert runtime.auth_token not in str(snapshot)
 
 
 async def test_auth_success_json_and_form(auth_client, runtime):
@@ -199,13 +208,13 @@ async def test_health_independent_of_directory(auth_client, runtime):
     response = await auth_client.get("/health")
     assert response.status == 200
     assert (await response.json())["status"] == "ok"
-    for path in ("/", "/api/status", "/diagnose", "/auth-wrapper.py"):
+    for path in ("/", "/api/status", "/api/diagnostics", "/diagnose", "/auth-wrapper.py"):
         assert (await auth_client.get(path)).status == 404
 
 
 async def test_direct_ingress_and_spoofed_headers_denied(aiohttp_client, runtime):
     client = await aiohttp_client(create_ingress_app(runtime))
-    for path in ("/", "/api/status", "/auth-wrapper.py", "/static/app.js"):
+    for path in ("/", "/api/status", "/api/diagnostics", "/auth-wrapper.py", "/static/app.js"):
         response = await client.get(
             path, headers={"X-Forwarded-For": server.SUPERVISOR_IP, "X-Remote-User-Id": "owner"}
         )

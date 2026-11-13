@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from unittest.mock import Mock
 
-from aiohttp import web
+from aiohttp import ClientSession, web
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -13,7 +13,8 @@ from cryptography.x509.oid import NameOID
 from playwright.async_api import async_playwright
 
 from ldapauth import server
-from ldapauth.server import Runtime, create_ingress_app
+from ldapauth.directory import Identity
+from ldapauth.server import Runtime, create_auth_app, create_ingress_app
 from ldapauth.settings import Settings
 
 
@@ -47,12 +48,16 @@ async def main(chrome: bool):
             admin_group="HA-Administrators",
         )
         runtime = Runtime(settings, Path(temporary), directory=Mock(), legacy_paths=())
+        runtime.directory.authenticate.return_value = Identity(
+            "alice", "Alice Example", "alice@example.com", False
+        )
 
         original_peer = server.peer_address
         server.peer_address = lambda request: server.SUPERVISOR_IP
         app = web.Application()
         prefix = "/api/hassio_ingress/test-session"
         app.add_subapp(prefix, create_ingress_app(runtime))
+        app.add_subapp("/internal", create_auth_app(runtime))
         runner = web.AppRunner(app, access_log=None)
         await runner.setup()
         site = web.TCPSite(runner, "127.0.0.1", 0)
@@ -80,6 +85,21 @@ async def main(chrome: bool):
                     )
                     await page.goto(f"http://127.0.0.1:{port}{prefix}/")
                     await page.get_by_text("Configured", exact=True).wait_for()
+                    await page.get_by_text(
+                        "No authentication requests received since startup.", exact=False
+                    ).wait_for()
+                    async with ClientSession() as client:
+                        async with client.post(
+                            f"http://127.0.0.1:{port}/internal/auth",
+                            headers={"Authorization": "Bearer " + runtime.auth_token},
+                            json={"username": "alice", "password": "synthetic-password"},
+                        ) as response:
+                            assert response.status == 200
+                    await page.get_by_role("button", name="Refresh log", exact=True).click()
+                    await page.get_by_text(
+                        "Authentication requests received: 1. Last completed response: HTTP 200",
+                        exact=True,
+                    ).wait_for()
                     await page.get_by_role("button", name="Test directory connection").click()
                     await page.get_by_text("Directory bind succeeded.", exact=False).wait_for()
                     await page.locator("#certificate-file").set_input_files(
@@ -110,6 +130,10 @@ async def main(chrome: bool):
                         "Det opplastede sertifikatet er fjernet.", exact=True
                     ).wait_for()
                     assert "Katalogtilkoblingen" in await page.locator("#check-result").inner_text()
+                    await page.get_by_text(
+                        "Innloggingsforespørsler mottatt: 1. Siste fullførte svar: HTTP 200",
+                        exact=True,
+                    ).wait_for()
                     await page.emulate_media(color_scheme="dark")
                     await page.screenshot(path=str(output / "desktop-dark-nb.png"), full_page=True)
                     await page.set_viewport_size({"width": 390, "height": 844})
@@ -120,7 +144,8 @@ async def main(chrome: bool):
                     assert not errors, errors
                     assert not bad_responses, bad_responses
                     print(
-                        "Browser checks passed: Ingress prefix, upload, connection test, download, "
+                        "Browser checks passed: Ingress prefix, auth diagnostics, upload, "
+                        "connection test, download, "
                         "remove/cancel, Norwegian, light/dark and mobile layout."
                     )
                     print(f"Screenshots: {output}")

@@ -8,6 +8,7 @@ Sign in to Home Assistant with Microsoft Active Directory. Control access with A
 - Required access group and an optional administrator group.
 - Custom AppArmor profile, isolated container networking and no published host ports.
 - A downloadable authentication script with a private, persistent API key.
+- Ingress diagnostics showing recent application messages and received authentication requests.
 
 ## Install
 
@@ -23,6 +24,8 @@ The button opens the app store in your own Home Assistant. Add this repository u
 4. Complete the **Configuration** tab and start the app.
 5. Select **Open Web UI** to upload your AD CA certificate and download your configured authentication script.
 6. Follow the panel's sign-in setup steps, or see the [complete documentation](ldapauth/DOCS.md).
+
+The downloaded `auth-wrapper.py` must be copied from your computer into the same Home Assistant folder as `configuration.yaml`. Core expects `/config/auth-wrapper.py`; downloading the file alone does not install it.
 
 Repository URL:
 

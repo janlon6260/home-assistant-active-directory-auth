@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.3
+
+- Added an Ingress diagnostics view with manual refresh, a bounded in-memory log buffer and authentication request counts, independent of Home Assistant's live log stream.
+- Restrict diagnostics to Ingress, redact configured secrets and omit raw exception details.
+- Clarified that the downloaded authentication script must be copied from the user's computer into Home Assistant's configuration folder; added troubleshooting for Core's missing-file error.
+- Record unexpected authentication failures as HTTP 500 with a safe message.
+- Added regression and browser checks for diagnostics, access isolation, request counts and log handling.
+
 ## 3.0.2
 
 - Fixed the Home Assistant authentication examples to use `/usr/local/bin/python3`, because the command-line provider does not inherit the normal executable search path.
