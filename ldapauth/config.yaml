@@ -1,5 +1,5 @@
 name: "Active Directory Authentication"
-version: "3.0.1"
+version: "3.0.2"
 slug: "ldapauth"
 description: "Active Directory sign-in with secure LDAP, certificate management and Ingress"
 url: https://github.com/janlon6260/home-assistant-active-directory-auth

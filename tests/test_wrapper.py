@@ -55,7 +55,10 @@ def test_wrapper_malformed_response_fails_closed(wrapper, monkeypatch, identity,
 
 
 @pytest.mark.parametrize("admin", [False, True])
-async def test_wrapper_real_http_subprocess(auth_client, runtime, tmp_path, admin):
+@pytest.mark.parametrize("inherit_environment", [False, True])
+async def test_wrapper_real_http_subprocess(
+    auth_client, runtime, tmp_path, admin, inherit_environment
+):
     import json
 
     runtime.directory.authenticate.return_value = Identity(
@@ -68,11 +71,14 @@ async def test_wrapper_real_http_subprocess(auth_client, runtime, tmp_path, admi
     script = tmp_path / "wrapper.py"
     script.write_text(source)
     environment = {
-        **os.environ,
+        **(os.environ if inherit_environment else {}),
         "username": "alice",
         "password": "user-secret",
-        "HTTP_PROXY": "http://127.0.0.1:1",
     }
+    if inherit_environment:
+        environment["HTTP_PROXY"] = "http://127.0.0.1:1"
+    if os.name == "nt":
+        environment["SYSTEMROOT"] = os.environ["SYSTEMROOT"]
     process = await asyncio.create_subprocess_exec(
         sys.executable,
         str(script),
@@ -107,9 +113,60 @@ async def test_wrapper_denial_produces_no_metadata(auth_client, runtime, tmp_pat
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
     )
-    output, _ = await asyncio.wait_for(process.communicate(), timeout=10)
+    output, errors = await asyncio.wait_for(process.communicate(), timeout=10)
     assert process.returncode == 1
     assert output == b""
+    assert b"HTTP 401" in errors
+    assert runtime.auth_token.encode() not in errors
+
+
+def test_wrapper_template_reports_unconfigured_script(wrapper, monkeypatch, capsys):
+    monkeypatch.setenv("username", "alice")
+    monkeypatch.setenv("password", "user-secret")
+    assert wrapper.main() == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "Unconfigured script" in captured.err
+    assert "alice" not in captured.err
+    assert "user-secret" not in captured.err
+
+
+@pytest.mark.parametrize("status", [401, 404, 429, 503, 500])
+def test_wrapper_http_errors_are_safe_and_visible(wrapper, monkeypatch, capsys, status):
+    from urllib.error import HTTPError
+
+    monkeypatch.setenv("username", "alice")
+    monkeypatch.setenv("password", "user-secret")
+    monkeypatch.setattr(wrapper, "ENDPOINT", "http://example.test/auth")
+    opener = Mock()
+    opener.open.side_effect = HTTPError(
+        wrapper.ENDPOINT, status, "user-secret private-api-key", {}, None
+    )
+    monkeypatch.setattr(wrapper, "build_opener", lambda *args: opener)
+    assert wrapper.main() == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "AD authentication:" in captured.err
+    assert "user-secret" not in captured.err
+    assert "private-api-key" not in captured.err
+    assert "alice" not in captured.err
+
+
+def test_wrapper_connection_error_does_not_disclose_exception(wrapper, monkeypatch, capsys):
+    from urllib.error import URLError
+
+    monkeypatch.setenv("username", "alice")
+    monkeypatch.setenv("password", "user-secret")
+    monkeypatch.setattr(wrapper, "ENDPOINT", "http://example.test/auth")
+    opener = Mock()
+    opener.open.side_effect = URLError("user-secret private-api-key")
+    monkeypatch.setattr(wrapper, "build_opener", lambda *args: opener)
+    assert wrapper.main() == 1
+    captured = capsys.readouterr()
+    assert captured.out == ""
+    assert "Cannot reach the app" in captured.err
+    assert "user-secret" not in captured.err
+    assert "private-api-key" not in captured.err
 
 
 def test_wrapper_redirect_is_disabled(wrapper):

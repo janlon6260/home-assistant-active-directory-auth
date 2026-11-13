@@ -46,6 +46,23 @@ def test_standard_user(directory, connections):
     assert connections.factory.call_args_list[1].args[1:] == (connections.entry.entry_dn, "secret")
 
 
+def test_ldap_debug_logging_identifies_stages_without_credentials(directory, connections, caplog):
+    with caplog.at_level("DEBUG", logger="ldapauth.directory"):
+        directory.authenticate("alice", "user-secret")
+    assert "Directory lookup bind succeeded" in caplog.text
+    assert "User search completed (entries=1, LDAP result=0)" in caplog.text
+    assert "Required group membership matched: True" in caplog.text
+    assert "User credential bind succeeded" in caplog.text
+    for secret in (
+        "alice",
+        "user-secret",
+        directory.settings.bind_password,
+        directory.settings.bind_user,
+        connections.entry.entry_dn,
+    ):
+        assert secret not in caplog.text
+
+
 def test_full_access_group_dn_is_used_without_appending_base(directory, connections):
     directory.settings = replace(
         directory.settings, user_group="CN=HA-Users,OU=Groups,DC=example,DC=com"

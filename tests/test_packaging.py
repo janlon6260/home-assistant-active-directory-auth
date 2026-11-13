@@ -72,3 +72,18 @@ def test_ingress_paths_are_relative():
     assert 'href="/' not in html
     assert "http://" not in html
     assert "https://" not in html
+
+
+def test_home_assistant_provider_examples_use_absolute_python():
+    import html
+
+    page = (APP / "static/index.html").read_text(encoding="utf-8")
+    documentation = (APP / "DOCS.md").read_text(encoding="utf-8")
+    page_match = re.search(r"<code>(homeassistant:.*?)</code>", page, re.DOTALL)
+    docs_match = re.search(r"```yaml\s*(homeassistant:.*?)```", documentation, re.DOTALL)
+    assert page_match and docs_match
+    for example in (page_match[1], docs_match[1]):
+        config = yaml.safe_load(html.unescape(example))
+        provider = config["homeassistant"]["auth_providers"][0]
+        assert provider["command"] == "/usr/local/bin/python3"
+        assert provider["args"] == ["/config/auth-wrapper.py"]

@@ -5,6 +5,7 @@ import json
 import logging
 import secrets
 import socket
+import sys
 import time
 from collections import OrderedDict, deque
 from concurrent.futures import ThreadPoolExecutor
@@ -131,6 +132,7 @@ async def health(request):
 
 
 async def authenticate(request):
+    LOGGER.debug("Authentication request received on the internal endpoint")
     runtime = request.app[RUNTIME]
     supplied = request.headers.get("Authorization", "").encode("utf-8")
     if not hmac.compare_digest(supplied, ("Bearer " + runtime.auth_token).encode("ascii")):
@@ -178,6 +180,7 @@ async def authenticate(request):
             "Directory authentication unavailable; check configuration, TLS and connectivity"
         )
         raise web.HTTPServiceUnavailable(text="Directory unavailable.") from error
+    LOGGER.info("Directory authentication succeeded")
     return web.json_response(identity.as_dict())
 
 
@@ -243,15 +246,20 @@ async def delete_certificate(request):
 
 
 async def check_directory(request):
+    LOGGER.debug("Directory connection test requested through Ingress")
     runtime = request.app[RUNTIME]
     if not runtime.rate_limit.allow("__connection_check__"):
         raise web.HTTPTooManyRequests(text="Try again shortly.")
     try:
         await runtime.call_directory(runtime.directory.check)
     except DirectoryUnavailable as error:
+        LOGGER.warning(
+            "Directory connection test failed; check configuration, TLS and connectivity"
+        )
         raise web.HTTPBadGateway(
             text="Connection failed. Check the server, bind credentials and CA certificate."
         ) from error
+    LOGGER.info("Directory connection test succeeded")
     return web.json_response({"ok": True})
 
 
@@ -300,12 +308,11 @@ def production_app(data_dir: Path = Path("/data"), *, ingress_port: int = 8099) 
     settings = Settings.from_options(
         json.loads((data_dir / "options.json").read_text(encoding="utf-8"))
     )
-    logging.basicConfig(
-        level=logging.DEBUG if settings.debug_logging else logging.INFO,
-        format="%(asctime)s %(levelname)s %(message)s",
+    logging.getLogger("ldapauth").setLevel(
+        logging.DEBUG if settings.debug_logging else logging.INFO
     )
-
     logging.getLogger("ldap3").setLevel(logging.WARNING)
+    LOGGER.info("Application logging configured (debug=%s)", settings.debug_logging)
     runtime = Runtime(settings, data_dir)
     app = create_auth_app(runtime)
 
@@ -336,6 +343,12 @@ def production_app(data_dir: Path = Path("/data"), *, ingress_port: int = 8099) 
 
 
 def main():
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(name)s: %(message)s",
+        stream=sys.stdout,
+        force=True,
+    )
     web.run_app(
         production_app(),
         host="0.0.0.0",

@@ -1,17 +1,21 @@
 # Validation — 13 November 2026
 
-Local checks for version 3.0.1, run on Windows. Dependency audits and Alpine binary-availability checks were last run on 12 November 2026; dependency versions have not changed.
+Local checks for version 3.0.2, run on Windows. Dependency audits and Alpine binary-availability checks were last run on 12 November 2026; dependency versions have not changed.
 
 | Check | Result |
 | --- | --- |
-| Python 3.13.1 test suite | 104 passed, 1 skipped |
-| Python 3.14.8 test suite | 104 passed, 1 skipped |
+| Python 3.13.1 test suite | 116 passed, 1 skipped |
+| Python 3.14.8 test suite | 116 passed, 1 skipped |
 | Python statement coverage | 94% overall; certificate and settings modules 100% |
 | Real TLS handshakes | Trusted CA and matching hostname accepted; untrusted CA and mismatched hostname rejected |
 | HTTP and authentication | API-key enforcement, Ingress TCP-peer isolation, CSRF, input/body limits, roles, rate limits and worker availability passed |
 | AD group matching | Reproduced rejected sign-in for a full group DN in 3.0.0; 3.0.1 accepts CN/full DN, casing and separator whitespace and retains required membership and password checks |
 | LDAP client regression | ldap3 mock directory exercises lookup, short-name/UPN sign-in and user binds for CN/full-DN access groups |
 | Authentication diagnostics | App logs distinguish missing group membership and other denial reasons without exposing submitted credentials |
+| Minimal provider environment | Downloaded wrapper succeeds with only provider credentials and no inherited PATH (plus SYSTEMROOT on Windows); configuration examples use Core's absolute Python path |
+| Wrapper failure diagnostics | HTTP and connection failures produce stderr diagnostics without echoing submitted credentials, API keys or raw server exceptions |
+| Debug option | Incoming HTTP authentication, lookup bind, user search, group matching and user bind emit safe application traces when enabled |
+| ShellCheck 0.11.0 | Reproduced SC1008 using the old command; the corrected `--shell=bash` invocation passes |
 | Production application lifecycle | Both listeners start; health endpoint responds; worker pool closes on shutdown |
 | Browser workflow, Chrome 157 | Ingress URL prefix, connection test, certificate upload, script download, removal/cancel, language switching, light/dark presentation and mobile layout passed |
 | Browser errors | No JavaScript exceptions or failed HTTP responses during the tested workflow |
@@ -37,7 +41,18 @@ This machine has no Docker runtime or installed WSL distribution. The following 
 - The actual Home Assistant security score, Ingress session authorization and Core-to-app hostname resolution.
 - Authentication against a real Active Directory domain, including regular-user and administrator account creation.
 
-GitHub Actions is configured to lint, test Python 3.13/3.14, audit dependencies, parse AppArmor, run ShellCheck, exercise the browser workflow, build both container architectures and verify container startup/health. These workflows have not been executed remotely during this task.
+The native Home Assistant Log tab timeout reported by the user has not been reproduced or verified fixed. SSH output confirms that the 3.0.1 service starts and produces log entries. The absolute Core command and new diagnostics still need confirmation in the user's installation.
+
+## Existing CI evidence
+
+Reviewed [run 43326510019](https://github.com/janlon6260/home-assistant-active-directory-auth/actions/runs/43326510019) for commit `ffb8089`:
+
+- Both amd64 and arm64 container builds and startup/health checks passed.
+- Browser checks passed.
+- Both Python test suites and dependency audits passed.
+- The Python 3.13 validation job passed AppArmor syntax validation, then failed on ShellCheck SC1008. The corresponding Python 3.14 job was cancelled during its final validation step.
+
+Version 3.0.2 fixes the ShellCheck invocation, separates validator steps, and disables fail-fast for the Python matrix. This revised workflow has not been run remotely by the assistant.
 
 ## Upgrade review
 

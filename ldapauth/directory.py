@@ -1,3 +1,4 @@
+import logging
 import ssl
 from dataclasses import dataclass
 
@@ -10,6 +11,7 @@ from .groups import normalize_dn, resolve_group_dn
 from .settings import Settings
 
 LDAP_TIMEOUT = 5
+LOGGER = logging.getLogger(__name__)
 
 
 class AuthenticationFailed(Exception):
@@ -58,6 +60,9 @@ class Directory:
 
     def _server(self) -> Server:
         host, port, secure = self.settings.endpoint()
+        LOGGER.debug(
+            "Preparing directory connection (TLS=%s, verify=%s)", secure, self.settings.ldaps_verify
+        )
         tls = None
         if secure:
             ca = self.certificates.trust() if self.settings.ldaps_verify else None
@@ -82,6 +87,7 @@ class Directory:
         )
 
     def authenticate(self, username: str, password: str) -> Identity:
+        LOGGER.debug("LDAP authentication started")
         if not username or not password:
             raise AuthenticationFailed
         if not self.settings.configured:
@@ -90,8 +96,13 @@ class Directory:
         try:
             server = self._server()
             lookup = self._connection(server, self.settings.bind_user, self.settings.bind_password)
+            LOGGER.debug("Directory lookup bind started")
             if not lookup.bind():
+                LOGGER.debug(
+                    "Directory lookup bind rejected (LDAP result=%s)", lookup.result.get("result")
+                )
                 raise DirectoryUnavailable
+            LOGGER.debug("Directory lookup bind succeeded")
             safe = escape_filter_chars(username)
             query = (
                 "(&(objectCategory=person)(objectClass=user)"
@@ -104,6 +115,11 @@ class Directory:
                 size_limit=2,
                 time_limit=LDAP_TIMEOUT,
                 attributes=["sAMAccountName", "displayName", "cn", "mail", "memberOf"],
+            )
+            LOGGER.debug(
+                "User search completed (entries=%d, LDAP result=%s)",
+                len(lookup.entries),
+                lookup.result.get("result"),
             )
             if lookup.result.get("result") != 0:
                 raise DirectoryUnavailable
@@ -122,13 +138,19 @@ class Directory:
 
             groups = {normalize_dn(str(group)) for group in attributes.get("memberof", [])}
             required = self._group_dn(self.settings.user_group)
+            LOGGER.debug("Required group membership matched: %s", required in groups)
             if required not in groups:
                 raise AuthenticationFailed("required_group_missing")
             user = self._connection(server, entry.entry_dn, password)
+            LOGGER.debug("User credential bind started")
             if not user.bind():
+                LOGGER.debug(
+                    "User credential bind rejected (LDAP result=%s)", user.result.get("result")
+                )
                 if user.result.get("result") == 49:
                     raise AuthenticationFailed
                 raise DirectoryUnavailable
+            LOGGER.debug("User credential bind succeeded")
             return Identity(
                 first("sAMAccountName", username).casefold(),
                 clean_metadata(first("displayName", first("cn", username))),
@@ -139,6 +161,7 @@ class Directory:
                 ),
             )
         except (LDAPException, OSError, ValueError) as error:
+            LOGGER.debug("Directory operation failed (%s)", type(error).__name__)
             raise DirectoryUnavailable from error
         finally:
             for connection in (user, lookup):
@@ -152,6 +175,7 @@ class Directory:
         return resolve_group_dn(group, self.settings.groups_base_dn)
 
     def check(self) -> None:
+        LOGGER.debug("Directory service-account connection test started")
         connection = None
         try:
             if not self.settings.configured:
@@ -160,8 +184,14 @@ class Directory:
                 self._server(), self.settings.bind_user, self.settings.bind_password
             )
             if not connection.bind():
+                LOGGER.debug(
+                    "Service-account connection test rejected (LDAP result=%s)",
+                    connection.result.get("result"),
+                )
                 raise DirectoryUnavailable
+            LOGGER.debug("Service-account connection test succeeded")
         except (LDAPException, OSError, ValueError) as error:
+            LOGGER.debug("Directory connection test failed (%s)", type(error).__name__)
             raise DirectoryUnavailable from error
         finally:
             if connection is not None:

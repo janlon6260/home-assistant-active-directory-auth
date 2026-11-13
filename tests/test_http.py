@@ -55,6 +55,36 @@ async def test_production_startup_and_shutdown(aiohttp_client, settings, tmp_pat
         runtime.pool.submit(lambda: None)
 
 
+async def test_debug_option_produces_safe_application_traces(
+    aiohttp_client, settings, tmp_path, caplog, monkeypatch
+):
+    import json
+    import logging
+    from dataclasses import asdict, replace
+
+    logger = logging.getLogger("ldapauth")
+    monkeypatch.setattr(logger, "level", logger.level)
+    settings = replace(settings, debug_logging=True)
+    (tmp_path / "options.json").write_text(json.dumps(asdict(settings)), encoding="utf-8")
+    with caplog.at_level(logging.DEBUG):
+        app = server.production_app(tmp_path, ingress_port=0)
+        runtime = app[server.RUNTIME]
+        runtime.directory = Mock()
+        runtime.directory.authenticate.side_effect = AuthenticationFailed("required_group_missing")
+        client = await aiohttp_client(app)
+        response = await client.post(
+            "/auth", headers=headers(runtime), json={"username": "alice", "password": "user-secret"}
+        )
+        await client.close()
+    assert response.status == 401
+    assert "Application logging configured (debug=True)" in caplog.text
+    assert "Authentication request received on the internal endpoint" in caplog.text
+    assert "required_group_missing" in caplog.text
+    assert "alice" not in caplog.text
+    assert "user-secret" not in caplog.text
+    assert runtime.auth_token not in caplog.text
+
+
 async def test_auth_success_json_and_form(auth_client, runtime):
     for arguments in (
         {"json": {"username": "Alice", "password": "secret"}},

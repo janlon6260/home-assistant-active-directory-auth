@@ -1,5 +1,13 @@
 # Changelog
 
+## 3.0.2
+
+- Fixed the Home Assistant authentication examples to use `/usr/local/bin/python3`, because the command-line provider does not inherit the normal executable search path.
+- Added safe script errors on stderr for missing configuration, connection failures, rejected requests and invalid responses.
+- Added application debug traces for the authentication pipeline and directory connection tests, with explicit startup logging to stdout.
+- Added tests that run the wrapper with a minimal provider environment and verify safe debug output.
+- Fixed ShellCheck SC1008 by selecting Bash explicitly in CI; split validation steps and preserve both Python matrix results when one fails.
+
 ## 3.0.1
 
 - Fixed rejected sign-ins when an access or administrator group is specified using its full distinguished name.

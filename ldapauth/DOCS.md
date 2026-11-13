@@ -60,7 +60,7 @@ homeassistant:
   auth_providers:
     - type: command_line
       name: Active Directory
-      command: python3
+      command: /usr/local/bin/python3
       args:
         - /config/auth-wrapper.py
       meta: true
@@ -69,7 +69,9 @@ homeassistant:
 
 3. Check your Home Assistant configuration, restart Core, and test AD sign-in in a private browser window while retaining your local administrator session.
 
-The script uses Python's standard library; Core does not need curl, jq or any extra packages. Credentials arrive through the `username` and `password` environment variables. The script sends them only to the app's internal authentication endpoint and returns a nonzero exit status on errors. It explicitly outputs `group = system-users` for regular users and `group = system-admin` for configured administrator-group members.
+Use the absolute command `/usr/local/bin/python3` in Home Assistant Core. The command-line provider passes only `username` and `password` to the process and does not inherit Core's normal `PATH`; a bare `python3` may fail before the script runs.
+
+The script uses Python's standard library; Core does not need curl, jq or any extra packages. Credentials arrive through the `username` and `password` environment variables. The script sends them only to the app's internal authentication endpoint and returns a nonzero exit status on errors. It explicitly outputs `group = system-users` for regular users and `group = system-admin` for configured administrator-group members. Errors go to Core's log through stderr and never include submitted credentials or the API key.
 
 The generated script contains a secret. Do not commit it, publish it, or place it in `/config/www`, a shared folder or another public location. The key persists across app restarts and upgrades. Reinstalling the app with its data removed creates a new key; download a fresh script afterward. To rotate a compromised key, stop the app, remove `/data/auth_token` through trusted container administration, restart the app and replace the downloaded script.
 
@@ -122,6 +124,9 @@ There is now one authoritative `config.yaml`. The old duplicate `config.json` ha
 | Connection test works, login fails | Check direct access-group membership, the user search base, password, account expiry/lockout and a unique username. |
 | Full group DN fails on version 3.0.0 | Upgrade to 3.0.1, or use the group's short CN in `user_group` and its parent DN in `groups_base_dn`. Version 3.0.0 incorrectly appended the base DN to an already complete group DN. |
 | Core reports `Login attempt or request with invalid authentication` | This identifies the browser's failed login, not its underlying cause or an AD server. Check the app log at the same time. In 3.0.1, `required_group_missing`, `user_not_found`, `ambiguous_user`, `invalid_credentials` and `not_configured` identify the failing step without exposing submitted credentials. An invalid script API key has a separate warning. |
+| No authentication requests reach the app | Use `command: /usr/local/bin/python3` for the downloaded wrapper and restart Home Assistant Core. The command-line provider does not inherit the normal `PATH`. Check Core's log for script startup errors. |
+| Debug is enabled, but the log only contains startup messages | Save and restart the app after changing `debug_logging`. Version 3.0.2 adds traces for incoming auth requests, lookup bind, user search, group membership and user bind. If there is no incoming-request trace, inspect the Core command and script connection first. |
+| The app's Log tab spins, but SSH can retrieve logs | Read-only `ha apps logs <app-slug>` retrieves app output through the CLI. A successful SSH read shows that log entries exist; a timeout in the UI also requires checking the Supervisor/Core log for the failing request. |
 | HTTP 401 from `/auth` | Replace the wrapper with a fresh download, or check the user's credentials and group membership. |
 | HTTP 429 | Wait one minute; review repeated login attempts. Limits reset on restart. |
 | HTTP 503 | The directory is unavailable or all four workers are occupied; check directory health. |

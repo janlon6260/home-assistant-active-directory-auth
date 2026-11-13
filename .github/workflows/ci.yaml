@@ -12,6 +12,7 @@ jobs:
   tests:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python: ["3.13", "3.14"]
     steps:
@@ -26,11 +27,14 @@ jobs:
       - run: python -m ruff format --check .
       - run: python -m pytest --cov=ldapauth --cov-report=term-missing
       - run: python -m pip_audit -r ldapauth/requirements.txt
-      - run: |
+      - name: Install profile and script validators
+        run: |
           sudo apt-get update
           sudo apt-get install -y apparmor-utils shellcheck
-          apparmor_parser --skip-kernel-load --skip-read-cache ldapauth/apparmor.txt
-          shellcheck ldapauth/rootfs/etc/s6-overlay/s6-rc.d/ldapauth/run
+      - name: Validate AppArmor syntax
+        run: apparmor_parser --skip-kernel-load --skip-read-cache ldapauth/apparmor.txt
+      - name: Validate S6 Bash script
+        run: shellcheck --shell=bash ldapauth/rootfs/etc/s6-overlay/s6-rc.d/ldapauth/run
 
   containers:
     runs-on: ubuntu-latest
@@ -48,7 +52,7 @@ jobs:
           push: false
           load: true
           tags: local/ad-auth:ci
-          build-args: BUILD_VERSION=3.0.1
+          build-args: BUILD_VERSION=3.0.2
       - name: Verify container startup and health
         shell: bash
         run: |
